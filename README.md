@@ -3,7 +3,7 @@ Please refer to https://github.com/bgodard/celestia-g2
 
 a) anaglyphic mode
 
-   red-cyan glassed needed
+   red-cyan glasses needed
 
 b) crosseyd-view mode 
 
