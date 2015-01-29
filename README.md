@@ -5,14 +5,14 @@ a) anaglyphic mode
 
    red-cyan glasses needed
 
-b) crosseyd-view mode 
+b) crossed-eye-view mode 
 
    for realtime stereoscopics without any utilities and for recording hardware-independent stereo-videos;
-   if you know about "crossed-eye stereos", and if you own two monitors, you may imagine the terrific effect... ) 
+   If you know about "crossed-eye"-stereos, and if you own two monitors, you may imagine the terrific effect... ) 
 
 c) support for shutter-glasses 
 
-    at least vblank-synced should work, still working on this 
+    at least vblank-synced should work, I'm still working on this 
 
 d) roadmap: support for headmounted-displays (other then *-glasses)
 
