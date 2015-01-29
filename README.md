@@ -14,7 +14,7 @@ c) support for shutter-glasses
 
     at least vblank-synced should work, I'm still working on this 
 
-d) roadmap: support for headmounted-displays (other then *-glasses)
+d) roadmap: support for headmounted-displays (other than *-glasses)
 
 A lot of bits and bobs to do, patch(es) will follow ...
 
