@@ -1,0 +1,41 @@
+Compiler issue fixes:
+I am not very experienced with qmake, but this may help you with
+compiling cmod-tools, and help "qmake"-devs to fix in better manner
+
+If you get errors while compiling the cmod tools in
+
+src/tools/cmod
+you might try:
+    (after qmake within)
+
+    First: Copy (or move) all files
+        FROM src/tools/cmod/common TO
+        src/tools/cmod/3dstocmod
+        (maybe changing the makefile will do the job, too)
+
+    Compiler complains about not finding "io.h" [cmodsphere]
+        replace
+        #<include io.h>         with
+        #<include sys/io.h>     in
+        cmodsphere.cpp
+
+    Linker complains about undefined references to glu_Things... [cmodviews]
+        Edit src/tools/cmod/cmodviews/makefile
+        APPEND to the line which begins with "LIBS" (after -lpthread)
+        -lglut -lGLU
+
+    Compiler complains "exit" not in that scope... [itokawa]
+        Edit src/tools/cmod/itokawa/txt2cmod.cpp
+        ADD the line
+        #include <cstdlib>
+        (below the one #include <iostream>
+
+after "Make" that, I had all those nice tools up and running...
+btw "make install" didn't work, too.
+
+Missing parameters for "qmake"?
+
+
+
+
+
