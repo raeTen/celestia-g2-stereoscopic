@@ -1,43 +1,44 @@
-# celestia-g2-stereoscopic
+### celestia-g2-stereoscopic
 Please first refer to https://github.com/bgodard/celestia-g2
 on how to build (and install).
-#
+## About this
 This repository just holds my modifications
-for stereoscopics, so you may test them, or having fun
-with it.
+for stereoscopics, so you may test or improve them.
 I'm busy with blender at the moment, so I decided to push
 that "unready" code. It's ready enough to enjoy stereoscopics.
-We need one repository for the project, so I didn't fork or
+We need only **one** repository for the project, so I didn't fork or
 clone again.
 
 In detail, for stereo-rendering there are (at the moment)
 modifications in
 
-./celestia/src/celestia/celestiacore.cpp
-./celestia/src/celestia/celestiacore.h
-./celestia/src/celengine/axisarrow.cpp
-./celestia/src/celengine/render.cpp
+* ./celestia/src/celestia/celestiacore.cpp
+* ./celestia/src/celestia/celestiacore.h
+* ./celestia/src/celengine/axisarrow.cpp
+* ./celestia/src/celengine/render.cpp
 
 You'd only need these 4 files from here within your
-local clone from
-https://gitub.com/bgodard/celestia-g2
-and compile it (again)
+local clone from [celestia-g2](https://gitub.com/bgodard/celestia-g2)
+and compile it (again). Download as zip (or clone it via git),
+and just overwrite them.
 
 (optional)
 for QT splashscreen issue:
-./celestia/src/qt/qtmain.cpp
-./celestia/src/qt/qtappwin.cpp
-./celestia/splash-g2.png
+* ./celestia/src/qt/qtmain.cpp
+* ./celestia/src/qt/qtappwin.cpp
+* ./celestia/splash-g2.png
+Or take a look at  [Celestia-g2-QTSplash](https://github.com/raeTen/celestia-g2-Qtsplash)
+which includes the newer splash.png gimp sources if you want to move pixels.
 
-I also changed some colors e.g. for orbitlines, axis arrows… -
+I also changed some colors e.g. for orbit-lines, axis-arrows… -
 to make it more comfortable  while using red-cyan anaglyph-mode.
 Well. old-fashioned and depreacted, but still good, cheap and
 useable at least to begin with stereoscopics.
 
-As already mentioned, stereo is working, with a known
+As already mentioned, stereo is working with a known
 little weakness on travelling _through_ far distances.
-This is a proof of concept how to modify the engine,
-to have stereoscopic view even for head mounted displays later on.
+This is a proof of concept on how to modify the engine,
+to have stereoscopic view, even for head mounted displays later on.
 We don't loose FPS, 'cause the magic is called interlacing.
 
 This is developed and tested with Linux, the modifications
@@ -50,25 +51,29 @@ may run the binary out of your local clone path, and solve the -z's issue,
 before I do ;-)
 
 For now, F-Keys used are:
-SHIFT+F2 OR F3 will toggle between "normal" "anaglyph" "shutter" "shutter_inverted" "crossed-eyed" "normal" and so on
-The modes themselves will be easily to be extended, e.g. "head-mounted-display" or whatever.
+* SHIFT+F2 OR F3
+   will toggle between "normal" "anaglyph" "shutter" "shutter_inverted" "crossed-eyed" "normal" and so on
+   The modes themselves will be easily to be extended, e.g. "head-mounted-display" or whatever.
+* SHIFT+F5/F6
+   increase/decrease stereo depth which is nested with parallax point for now.
+* SHIFT+F7
+   switches internal defined left/right, well a kind of debug/research thing at all,
+   but there's still no real standard on this issue afaik.
 
-SHIFT+F5/F6 increase/decrease stereo depth which is nested with parallax point for now.
-SHIFT+F7 switches internal defined left/right, well a kind of debug/research thing at all,
-but there's still no real standard on this afaik.
-Free keys are rare in celestia, so maybe we should build a stereo-menu later on.
+Platform independent unused keys are rare in celestia, so we should build a stereo-menu later on.
 
-BTW: realtime communication rocks, the old #celestia on freenode irc
+BTW: realtime communication rocks, the irc channel
+[celestia on freenode irc](irc://irc.freenode.net/#celestia)
 is still alive (again), never hesitate to join ;-)
--------------------------------------------------------------------------
-Technical Notes:
+
+#Technical Notes:**
     
-a) anaglyphic mode
+1. anaglyphic mode
 
    red-cyan glasses needed
    other anaglyph methods won't be supported (by me)
 
-b) crossed-eyed-view mode 
+2. crossed-eyed-view mode
 
    for realtime stereoscopics without any utility and for
    recording hardware-independent stereo-videos;
@@ -84,10 +89,10 @@ b) crossed-eyed-view mode
    Those modes will be a little more "special multi view" internally,
    so that the user don't need to take care of this.
 
-b2) parallel-eyed-view mode (not implemented yet - wait, Shift+F7 does this job at the moment) 
+2a parallel-eyed-view mode (not implemented yet - wait, Shift+F7 does this job at the moment)
     I believe some stereo-video-players need it this way...
 
-c) support for shutter-glasses 
+3. support for shutter-glasses
 
     At least vblank-synced should work, but experimental,
     I don't own a quadbuffer, but sli consumer, so I cannot test.
@@ -103,9 +108,9 @@ c) support for shutter-glasses
     Or. if there's anyone out there who has figured out, help is welcome,
     afaik we are lack of some ansi escape codes...
 
-d) roadmap with topic to stereo:
-        support for headmounted-displays (and other displays)
-        internal 3D mouse-pointer (3D HID needed )
+4.  roadmap with topic to stereo:
+    support for headmounted-displays (and other displays)
+    internal 3D mouse-pointer (3D HID needed )
         
 A lot of bits and bobs to do - as always :)
 
