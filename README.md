@@ -89,8 +89,8 @@ is still alive (again), never hesitate to join ;-)
    Those modes will be a little more "special multi view" internally,
    so that the user don't need to take care of this.
 
-2a parallel-eyed-view mode (not implemented yet - wait, Shift+F7 does this job at the moment)
-    I believe some stereo-video-players need it this way...
+   parallel-eyed-view mode (not implemented yet - wait, Shift+F7 does this job at the moment)
+   I believe some stereo-video-players need it this way...
 
 3. support for shutter-glasses
 
