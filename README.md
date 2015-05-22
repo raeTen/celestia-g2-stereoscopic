@@ -1,4 +1,4 @@
-### celestia-g2-stereoscopic
+# celestia-g2-stereoscopic
 Please first refer to https://github.com/bgodard/celestia-g2
 on how to build (and install).
 ## About this
@@ -66,7 +66,7 @@ BTW: realtime communication rocks, the irc channel
 [celestia on freenode irc](irc://irc.freenode.net/#celestia)
 is still alive (again), never hesitate to join ;-)
 
-#Technical Notes:**
+###Technical Notes:
     
 1. anaglyphic mode
 
