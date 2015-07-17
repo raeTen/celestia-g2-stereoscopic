@@ -30,14 +30,18 @@ For the qtwidget you'll need another 5 files
 the new:
 * ./celestia/src/celestia/qt/qtstereosettings.h
 * ./celestia/src/celestia/qt/qtstereosettings.cpp
+
 the updated (just to include the widget):
+
 * ./celestia/src/celestia/qt/qtappwin.h
 * ./celestia/src/celestia/qt/qtappwin.cpp
+
 and the new splash
+
 * ./celestia/splash-g2.png
 ## ---------------
 
-and just overwrite them in 
+and just overwrite them in your local clone.
 
 If you want to push pixels within splash-g2.png,
 please take a look at  [Celestia-g2-QTSplash](https://github.com/raeTen/celestia-g2-Qtsplash)
@@ -178,10 +182,3 @@ Thanks to everybody (and especially to the NASA),
 who worked on celestia, I just love this piece of software.
 I'm sure Pluto and Charon will get a nice texture these days!
 I'll contribute more, but meanwhile I'm busy with blender again …
-
-
- 
-
-
-
-
