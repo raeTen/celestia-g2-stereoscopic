@@ -6,31 +6,45 @@ This repository just holds my modifications
 for stereoscopics, so you may test or improve them.
 I'm busy with blender at the moment, so I decided to push
 that "unready" code. It's ready enough to enjoy stereoscopics.
-We need only **one** repository for the project, so I didn't fork or
+We need only one repository for the project, so I didn't fork or
 clone again.
 
-In detail, for stereo-rendering there are (at the moment)
-modifications in
+There are modifications in
 
 * ./celestia/src/celestia/celestiacore.cpp
 * ./celestia/src/celestia/celestiacore.h
 * ./celestia/src/celengine/axisarrow.cpp
 * ./celestia/src/celengine/render.cpp
 
-You'd only need these 4 files from here within your
+You'd need these 4 files from here within your
 local clone from [celestia-g2](https://gitub.com/bgodard/celestia-g2)
-and compile it (again). Download as zip (or clone it via git),
-and just overwrite them.
+and compile it (again). Download as zip (or clone it via git).
 
-(optional)
-for QT splashscreen issue:
-* ./celestia/src/qt/qtmain.cpp
-* ./celestia/src/qt/qtappwin.cpp
+## Update (7/2015)
+I ported the modifications to a class, and created a small dockable qt widget
+for stereo settings, so we could easily tinker around with more
+values belonging to stereoscopics. I don't know if we need to
+have updated UI values from core-values, maybe we could skip the shifted
+"core-keys" later on.
+For the qtwidget you'll need another 5 files
+the new:
+* ./celestia/src/celestia/qt/qtstereosettings.h
+* ./celestia/src/celestia/qt/qtstereosettings.cpp
+the updated (just to include the widget):
+* ./celestia/src/celestia/qt/qtappwin.h
+* ./celestia/src/celestia/qt/qtappwin.cpp
+and the new splash
 * ./celestia/splash-g2.png
-Or take a look at  [Celestia-g2-QTSplash](https://github.com/raeTen/celestia-g2-Qtsplash)
-which includes the newer splash.png gimp sources if you want to move pixels.
+## ---------------
 
-I also changed some colors e.g. for orbit-lines, axis-arrows… -
+and just overwrite them in 
+
+If you want to push pixels within splash-g2.png,
+please take a look at  [Celestia-g2-QTSplash](https://github.com/raeTen/celestia-g2-Qtsplash)
+which includes the newer splash.png gimp sources.
+Don't use the qt code from there …
+
+I had also changed some colors e.g. for orbit-lines, axis-arrows… -
 to make it more comfortable  while using red-cyan anaglyph-mode.
 Well. old-fashioned and depreacted, but still good, cheap and
 useable at least to begin with stereoscopics.
@@ -60,13 +74,14 @@ For now, F-Keys used are:
    switches internal defined left/right, well a kind of debug/research thing at all,
    but there's still no real standard on this issue afaik.
 
-Platform independent unused keys are rare in celestia, so we should build a stereo-menu later on.
+* OR use the new dockable qtwidget for these settings
 
-BTW: realtime communication rocks, the irc channel
-[celestia on freenode irc](irc://irc.freenode.net/#celestia)
-is still alive (again), never hesitate to join ;-)
+~~Platform independent unused keys are rare in celestia, so we should build a stereo-menu later on.~~
 
-###Technical Notes:
+BTW: realtime communication rocks, never hesitate to join
+irc.freenode.net/#celestia
+
+## Technical Notes
     
 1. anaglyphic mode
 
@@ -78,7 +93,7 @@ is still alive (again), never hesitate to join ;-)
    for realtime stereoscopics without any utility and for
    recording hardware-independent stereo-videos;
    If you know about "crossed-eye"-stereos, and if you own two monitors,
-   you may imagine the terrific effect... )
+   you may imagine the terrific effect … )
    Please note, at the moment we just have a "splitted view" with two
    situations at all. The active (splitted) view will be rendered as single stereo scene,
    while the inactive situation remains in "background". Not very user-friendly,
@@ -90,23 +105,23 @@ is still alive (again), never hesitate to join ;-)
    so that the user don't need to take care of this.
 
    parallel-eyed-view mode (not implemented yet - wait, Shift+F7 does this job at the moment)
-   I believe some stereo-video-players need it this way...
+   I believe some stereo-video-players need it this way.
 
 3. support for shutter-glasses
 
     At least vblank-synced should work, but experimental,
     I don't own a quadbuffer, but sli consumer, so I cannot test.
     On weak machines it will flicker sometimes, it won't if celestia
-    could drive the sync to the glasses itself...
+    could drive the sync to the glasses itself.
     Hopefully nvidia tells us how to drive their ir-transmitter finally,
     to have more fun with Linux and their consumer cards.
     I'd love to hear from nvidia Linux+consumercard+stereo=no problem,
     In the end, we would just need to know how to sync the glasses via usb without
     having a vsync signal to it, in other words syncing by software,
     instead of hooking and modifying the scene by the gpu-driver like they do with directx
-    Just for the fun on computing, you know...
-    Or. if there's anyone out there who has figured out, help is welcome,
-    afaik we are lack of some ansi escape codes...
+    Just for the fun on computing, you know.
+    Or. if there's anyone out there who has figured out, help is appreciated,
+    afaik we are lack of some ansi escape codes …
 
 4.  roadmap with topic to stereo:
     support for headmounted-displays (and other displays)
@@ -114,10 +129,56 @@ is still alive (again), never hesitate to join ;-)
         
 A lot of bits and bobs to do - as always :)
 
-Finally:
-Thanks to everybody (and especially to the NASA)
+#Updated notes and thoughts…
+
+## Thoughts on celestia development in general
+
+Apart from stereoscopics and my gaining experience with modelling, I tumbled over
+issues associated with the 3ds format. I didn't find a way to have an exported
+3ds (scene) which is being (imported) exposed correctly by celestia.
+I tried *actual* modelling software like blender, Wings3D and so on.
+(even lightwave but not autodesk yet).
+If I import a *correct working* 3ds file (e.g. isscomplete.3ds) to blender (2.6x >),
+blender poses this correctly, but then exporting it without any modifications
+will make the 3ds unusable with celestia. I believe something went wrong
+with the chunks according to material/transparency, and that already happens while
+importing to blender, but i don't know yet for sure. That worked in the past
+didn't it?
+
+No one to blame for, that holy shit (pardon) is just sophisticated matter.
+Unfortunately 3ds is still proprietary, but "well known" over the years.
+Even with its doslike limitations it would be sufficient for cel things.
+They have "max" these days, they won't hurt themselves to make
+3ds an open format as a standard, simple and interchanging (what it is) format,
+right?
+It would be just the contrary, because the complete IT world would be just
+nothing without open formats and standards. I would never blame closed source
+software devs,  but we should blame those who
+want to hide supposedly secrets for ages and fleecing the general public.
+First and foremost the parted knowledge is the thing, which keeps the scientific headway.
+J.C. and id-soft is a shining example HOW it works.
+
+To cut a long story short:
+Free software for free software ;-)
+I read about the cmod exporter for historic blender versions. *This* is
+the thing we need in future if you ask me, because we want to
+be platform-independent and not dependent on these mystic-monger ;-).
+
+Fixing the thing with 3ds parsing/importing/exporting for blender
+OR within celestia importer would be very nice. I don't have a clue
+in detail yet, so helping out with this is very very much aapreciated.
+If anyone has got a copycat "cmod-exporter".py for blender (2.4 <) -
+please make it public again, it was linked within the original forum,
+which is down :-/
+Porting that to blender 2.7.x > should be the easiest way.
+
+
+## Finally:
+Thanks to everybody (and especially to the NASA),
 who worked on celestia, I just love this piece of software.
-I'll contribute more, but meanwhile I'm busy with blender…
+I'm sure Pluto and Charon will get a nice texture these days!
+I'll contribute more, but meanwhile I'm busy with blender again …
+
 
  
 
