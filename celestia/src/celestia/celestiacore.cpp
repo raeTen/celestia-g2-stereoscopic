@@ -6,7 +6,7 @@
 // keyboard events.  CelestiaCore then turns those events into calls
 // to Renderer and Simulation.
 //
-// Copyright (C) 2001-2009, 2015 the Celestia Development Team
+// Copyright (C) 2001-2015 the Celestia Development Team
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -85,58 +85,84 @@ static Console console(200, 120);
 static const double CelMaxSpeed=20.0e12;
 //we still could accelerate to more velocity at all, but this represents 100% of velocity
 //for stereoscopic values calulation.
-//TODO it'd be a good idea to define a maximal velocity "-nan ly/s" results in funny effects
+//TODO have these encapsulated but where, renderclass?
 uint TravelledTime = 0; // made global, avoiding redundant cpu-cycles - percent of travel time
 double isTravelTime = 0;
 double speed = 0.0f; // made global, avoiding redundant cpu-cycles
-//'users' value
-int CelStereoDepth = 42;
-//calculation values
-static const int CelMaxStereoDepth = 99;
-static const float CelStereoDepthFactor = 0.000290f;
 
-float stereoDepth = CelStereoDepth * CelStereoDepthFactor;
-/* represents eyes gap (~cm) depending on distance to near plane
- which is not really based on scientific formular but a good experience value.
- A scientific factor is much overkill cause it depends on human eye gap,distant to screen,
- screen(s) size and also virtual distances within in the sim,*/
+//TODO
 float CelFrontPlaneDepthv = 0.0f;
+float CelRotationLevelv = 0.0f;
 /* represents front plane virtual depth */
-static const int CelBackPlaneRelief = 8;
-int CelFrontPlaneDepth = CelStereoDepth/2 - CelBackPlaneRelief;
-/* represents back plane virtual depth ("parallax point (relief)" in relation to front plane)
- which always should stay in virtual stereo background ("behind real monitor plane")*/
-
-bool RightEye = false; //cel internal (correct)  signal, to see which eye is rendered for.
-int auxCelStereoDepth = 0; //used for situation with the need of inverted z value
-int BackPlaneOnly = 1; //switches eye-depth-information
-/*
-The complete 'frustum' (culled retangular) looks like a shorted hourglass (see cel_frustum.png), which doesn't
-matter on non-stereo projection, and due to the real big distances (we also could not resolve depth information
-by looking into star sky), it doesn't disturb while being in "near" situations
-It matters on fast journeys and travelling through deep space.
-So we need to figure out, _when_ to toggle right/left rendering process, maybe on
-"speed" and nearest objects, for back plane(s) which become front plane.
-
-*/
-bool testflag = false;
-uint StereoMode = false;
-
-enum sStereoMode
-{
-    none            = 0,
-    Anaglpyh        = 1,
-    Shutter        = 2,
-    Shutter_i       = 3,
-    CrossedEye      = 4,
-}; //to be used later
-
 
 static void warning(string s)
 {
     cout << s;
 }
+///++++++++++++++++++++++++++++++++++++++++++++++++++++
+//TODO different initial values for each mode, maybe storing in configFileName
+//I think the class fits inhere or in its own cpp/h file....
+Stereo::Stereo(
+                int smode) :
+    mode(smode)
 
+{
+    init();
+}
+void Stereo::init() 
+{
+    // "slider" value names might change in future, for now depth and "backplaneRelief" are relevant
+    uiVals[Stereo::depth] = 42;
+    uiVals[Stereo::frontplane] = 0;
+    uiVals[Stereo::backplaneRelief] = 8;
+    uiVals[Stereo::foobar] = 0;
+    uiFlags[Stereo::inverted] = 0;
+    uiFlags[Stereo::simplesettings] = 0;
+    uiFlags[Stereo::uirighteye] = 0;
+    uiFlags[Stereo::orbit] = 0;
+    uiFlags[Stereo::rotate] = 0;
+    uiFlags[Stereo::rotinv] = 0;
+    rightEye=false;
+    allinverted = 1;
+    uiVisible = false;
+}
+void Stereo::setStereoVal(int q_index,
+                         int q_value)
+{
+    uiVals[q_index] = q_value;
+}
+int Stereo::getStereoVal(int q_index)
+{
+    return uiVals[q_index];
+}
+void Stereo::setStereoFlag(int q_index,bool q_checked)
+{
+    uiFlags[q_index] = q_checked;
+    changed = true;
+}
+
+int Stereo::getMode()
+{
+    return mode;
+}
+void Stereo::setMode()
+{
+    mode+=1;
+    changed = true;
+}
+void Stereo::setMode(int smode)
+{
+    if (smode > Stereo::OFF)
+        smode=Stereo::OFF;
+    mode = smode;
+    changed = true;
+}
+///++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Stereo::~Stereo()
+{
+}
+///########################################################
 
 struct OverlayImage
 {
@@ -340,8 +366,9 @@ bool View::walkTreeResizeDelta(View* v, float delta, bool check)
     return true;
 }
 
-
+    
 CelestiaCore::CelestiaCore() :
+    stereo(NULL),
     config(NULL),
     universe(NULL),
     favorites(NULL),
@@ -377,6 +404,7 @@ CelestiaCore::CelestiaCore() :
     timer(NULL),
     runningScript(NULL),
     execEnv(NULL),
+    
 #ifdef CELX
     celxScript(NULL),
     luaHook(NULL),
@@ -418,6 +446,7 @@ CelestiaCore::CelestiaCore() :
        underlying engine even before rendering is enabled. It's initRenderer()
        routine will be called much later. */
     renderer = new Renderer();
+    
     timer = CreateTimer();
 
     execEnv = new CoreExecutionEnvironment(*this);
@@ -438,6 +467,7 @@ CelestiaCore::CelestiaCore() :
 
 CelestiaCore::~CelestiaCore()
 {
+   
     if (movieCapture != NULL)
         recordEnd();
 
@@ -1150,7 +1180,6 @@ void CelestiaCore::keyDown(int key, int modifiers)
 {
     char buf[64];
     setViewChanged();
-    //printf("key: %i modifiers %i \n",key,modifiers); ///nt_debug
 
 #ifdef CELX
     // TODO: should pass modifiers as a Lua table
@@ -1170,16 +1199,11 @@ void CelestiaCore::keyDown(int key, int modifiers)
         {
             case Key_F2:
             case Key_F3:
-                StereoMode+=1;
-                if ( StereoMode > 4 ) // || StereoMode < 0  )
-                {
-                    StereoMode=0;
-                    glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_FALSE);
-                    singleView();
-                }
-            if (StereoMode)
+                stereo->setMode();
+                break;
+            if (stereo->mode)
             {
-                sprintf(buf, _("Stereoscopic Mode: %i  (SHIFT F5/F6 for Depth Level)"),StereoMode);
+                sprintf(buf, _("Stereoscopic Mode: %i  (SHIFT F5/F6 for Depth Level)"),stereo->mode);
                 flash(buf, 2.0);
                 break;
             }
@@ -1188,50 +1212,51 @@ void CelestiaCore::keyDown(int key, int modifiers)
                 flash(_("Stereoscopic Mode OFF"));
             }
             case Key_F4:
-                if (StereoMode)
+                if (stereo->mode)
                 {
-                    testflag=true;
-                    sprintf(buf, _("F4 Stereoscopic Depth Level: %i %i "),CelStereoDepth,CelFrontPlaneDepth);
+                    sprintf(buf, _("F4 Stereoscopic Depth Level: %i %i "),stereo->uiVals[Stereo::depth],stereo->uiVals[Stereo::frontplane]);
                     flash(buf, 10.0);
                 }
                 break;
             case Key_F5:
-                if (StereoMode)
+                if (stereo->mode)
                 {
-                    CelStereoDepth -= 1;
-                    if (CelFrontPlaneDepth <= -CelMaxStereoDepth)
-                        CelFrontPlaneDepth = -CelMaxStereoDepth;
-                    stereoDepth = CelStereoDepth * CelStereoDepthFactor;
-                    CelFrontPlaneDepth = CelStereoDepth/2 - CelBackPlaneRelief;
-                    CelFrontPlaneDepthv = CelFrontPlaneDepth * CelStereoDepthFactor;
-                    //sprintf(buf, _("F4 Stereoscopic Depth Level: %i %i"),CelStereoDepth,CelFrontPlaneDepth);
-                    sprintf(buf, _("Stereoscopic Depth Level: %i"),CelStereoDepth);
+                    stereo->uiVals[Stereo::depth] -= 1;
+                    if (stereo->uiVals[Stereo::frontplane] <= -stereo->maxDepth)
+                        stereo->uiVals[Stereo::frontplane] = -stereo->maxDepth;
+                    stereo->fdepth = stereo->uiVals[Stereo::depth] * stereo->DepthFactor;
+                    stereo->uiVals[Stereo::frontplane] = \
+                                    stereo->uiVals[Stereo::depth]/2 - stereo->uiVals[Stereo::backplaneRelief];
+                    CelFrontPlaneDepthv = stereo->uiVals[Stereo::frontplane] * stereo->DepthFactor;
+                    //sprintf(buf, _("F4 Stereoscopic Depth Level: %i %i"),stereo->uiVals[Stereo::depth],stereo->uiVals[Stereo::frontplane]);
+                    sprintf(buf, _("Stereoscopic Depth Level: %i"),stereo->uiVals[Stereo::depth]);
                     flash(buf, 10.0);
                 }
                 break;
             case Key_F6:
-                if (StereoMode)
+                if (stereo->mode)
                 {
-                    CelStereoDepth += 1;
-                    if (CelFrontPlaneDepth >= CelMaxStereoDepth)
-                        CelFrontPlaneDepth = CelMaxStereoDepth;
+                    stereo->uiVals[Stereo::depth] += 1;
+                    if (stereo->uiVals[Stereo::frontplane] >= stereo->maxDepth)
+                        stereo->uiVals[Stereo::frontplane] = stereo->maxDepth;
 
-                    stereoDepth = CelStereoDepth * CelStereoDepthFactor;
-                    CelFrontPlaneDepth = CelStereoDepth/2 - CelBackPlaneRelief;
-                    CelFrontPlaneDepthv = CelFrontPlaneDepth * CelStereoDepthFactor;
-                    //sprintf(buf, _("F4 Stereoscopic Depth Level: %i %i"),CelStereoDepth,CelFrontPlaneDepth);
-                    sprintf(buf, _("Stereoscopic Depth Level: %i"),CelStereoDepth);
+                    stereo->fdepth = stereo->uiVals[Stereo::depth] * stereo->DepthFactor;
+                    stereo->uiVals[Stereo::frontplane] = \
+                                    stereo->uiVals[Stereo::depth]/2 - stereo->uiVals[Stereo::backplaneRelief];
+                    CelFrontPlaneDepthv = stereo->uiVals[Stereo::frontplane] * stereo->DepthFactor;
+                    //sprintf(buf, _("F4 Stereoscopic Depth Level: %i %i"),stereo->uiVals[Stereo::depth],stereo->uiVals[Stereo::frontplane]);
+                    sprintf(buf, _("Stereoscopic Depth Level: %i"),stereo->uiVals[Stereo::depth]);
                     flash(buf, 10.0);
                 }
                 break;
             case Key_F7:
-                if (StereoMode)
+                if (stereo->mode)
                 {
-                    if ( BackPlaneOnly == 1 )
-                        BackPlaneOnly=-1;
+                    if ( stereo->allinverted == 1 )
+                        stereo->allinverted = -1;
                     else
-                        BackPlaneOnly=1;
-                    sprintf(buf, _("Backplane switched: %i"),BackPlaneOnly);
+                        stereo->allinverted = 1;
+                    sprintf(buf, _("Stereo inverted: %i"),stereo->allinverted);
                     flash(buf, 2.0);
                 }
                 break;
@@ -2291,7 +2316,7 @@ void CelestiaCore::charEntered(const char *c_p, int modifiers)
     case '@':
         // !TODO: 'Edit mode' should be eliminated; it can be done better
         // with a Lua script.
-        ///I like both, please keep at least for the model designers
+        ///I like both, please keep at least for the model & ssc designers
         editMode = !editMode;
         break;
 #ifdef USE_HDR
@@ -2370,8 +2395,11 @@ void CelestiaCore::start(double t)
 
     sysTime = timer->getTime();
 
+    stereo = new Stereo(0);
+    
     if (startURL != "")
         goToUrl(startURL);
+    
 }
 
 void CelestiaCore::setStartURL(string url)
@@ -2593,7 +2621,7 @@ void CelestiaCore::tick()
     sim->update(dt);
 }
 
-void CelestiaCore::CelDynamicStereoValues()
+void CelestiaCore::celDynamicStereoValues()
 {
 /// code for stereoscopics sponsered by neTear (2009+2015)    
 // let virtual stereo frustum front plane behind the monitor while travelling, and
@@ -2602,15 +2630,15 @@ void CelestiaCore::CelDynamicStereoValues()
     if ( isTravelTime )
     {
         if ( TravelledTime < 24  &&   isTravelTime > 1 )
-            stereoDepth = 0.0f;
+            stereo->fdepth = 0.0f;
         else
-            stereoDepth = ( CelStereoDepth * TravelledTime / 100 ) * CelStereoDepthFactor;
-            if (stereoDepth > ( CelStereoDepth * CelStereoDepthFactor) )
-                stereoDepth = CelStereoDepth * CelStereoDepthFactor;
+            stereo->fdepth = ( stereo->uiVals[Stereo::depth] * TravelledTime / 100 ) * stereo->DepthFactor;
+            if (stereo->fdepth > ( stereo->uiVals[Stereo::depth] * stereo->DepthFactor) )
+                stereo->fdepth = stereo->uiVals[Stereo::depth] * stereo->DepthFactor;
     }
     else
     {
-        stereoDepth = CelStereoDepth * CelStereoDepthFactor;
+        stereo->fdepth = stereo->uiVals[Stereo::depth] * stereo->DepthFactor;
     }
     //TODO
     //working around the negative z's on back planes for "travel around 'far' distances"
@@ -2620,14 +2648,39 @@ void CelestiaCore::CelDynamicStereoValues()
         int speed_p= 100 * speed / CelMaxSpeed;
         if ( speed_p > 20000000 )
         {
-            stereoDepth = -(CelStereoDepth/2) * CelStereoDepthFactor;
-            CelFrontPlaneDepthv = ( (-CelStereoDepth / 2 - CelBackPlaneRelief * BackPlaneOnly) + CelFrontPlaneDepth ) * CelStereoDepthFactor;
+            stereo->fdepth = -(stereo->uiVals[Stereo::depth]/2) * stereo->DepthFactor;
+            stereo->uiVals[Stereo::frontplane]v = ( (-stereo->uiVals[Stereo::depth] / 2 - stereo->uiVals[Stereo::backplaneRelief] * stereo->allinverted) + stereo->uiVals[Stereo::frontplane] ) * stereo->DepthFactor;
         }
         //printf("Speed: %i\n",speed_p);
     }
     */
-    CelFrontPlaneDepthv = ( (CelStereoDepth / 2 - CelBackPlaneRelief * BackPlaneOnly) + CelFrontPlaneDepth ) * CelStereoDepthFactor;
+/*
+    CelFrontPlaneDepthv = ( (stereo->uiVals[Stereo::depth] / 2 - \
+                            stereo->uiVals[Stereo::backplaneRelief] * \
+                            stereo->allinverted) + stereo->uiVals[Stereo::frontplane] ) * \
+                            stereo->DepthFactor;
+                            */
+    CelFrontPlaneDepthv = ( (stereo->uiVals[Stereo::depth] / 2 - \
+                            stereo->uiVals[Stereo::backplaneRelief] * \
+                            stereo->allinverted) ) * \
+                            stereo->DepthFactor;
+    CelRotationLevelv =  ( (stereo->uiVals[Stereo::foobar] / 2 -\
+                            stereo->uiVals[Stereo::backplaneRelief] * \
+                            stereo->allinverted) ) * \
+                            stereo->DepthFactor;
+}
+void CelestiaCore::celStereoChanged()
+{
+    if (stereo->mode != Stereo::sidebyside_c)
+        if (views.size() > 1)
+            singleView();
+    ( stereo->mode >= Stereo::OFF ) && ( stereo->mode = 0 );
+    glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+    //convert bool to factor (non zero) by conditionally negate a value bitwise without branching (0|1 -> 1|-1)
+    stereo->allinverted = (stereo->uiFlags[Stereo::inverted] ^ \
+                    (stereo->uiFlags[Stereo::inverted] - 1)) * -1;
 
+    stereo->changed=false;
 }
 
 void CelestiaCore::draw()
@@ -2636,10 +2689,12 @@ void CelestiaCore::draw()
         return;
     viewChanged = false;
 
-    if (StereoMode)
-    {
-        CelDynamicStereoValues();
-    }
+    if (stereo->mode)
+        celDynamicStereoValues();
+ 
+    if (stereo->changed)
+        celStereoChanged();
+
     if (views.size() == 1)
     {
         // I'm not certain that a special case for one view is required; but,
@@ -2649,21 +2704,20 @@ void CelestiaCore::draw()
         // reasonable in the typical single view case, we'll use this
         // scissorless special case.  I'm only paranoid because I've been
         // burned by crap hardware so many times. cjl
+        ///At least we'd need a single view for some stereoscopics modes.
+        ///Having stereoscopics within (normal) multiviews would be possible by
+        ///anaglpyhic projection only.
         glViewport(0, 0, width, height);
         renderer->resize(width, height);
         ///here we go
-        if ( StereoMode )
+        if ( stereo->mode )
         {
             Observer& observer = sim->getObserver();
-            if (testflag)
-            {
-                //observer.updateUniversal();
-                testflag=false;
-            }
+            
             Vector3d hv(0.0, CelFrontPlaneDepthv, 0.0);
             Quaterniond CelCullingVPos = observer.getOrientation();
             Quaterniond hp = Quaterniond(0.0, hv.x(), CelFrontPlaneDepthv, hv.z()) * CelCullingVPos;
-            switch (StereoMode)
+            switch ( stereo->mode )
             {
                 case 1: //anaglyph red/cyan
 
@@ -2678,42 +2732,37 @@ void CelestiaCore::draw()
                         //the thing on quadbuffer-cards.
                         //Before implementing this for any other stereo-'tool' ... we need to fix the thing with -z
                         //The method below will be right the same for any represantation display
-
-                    glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-                    if ( ! RightEye )
+                        //(eventually with different given default stereo parameters)
+                    if ( ! stereo->rightEye )
                     {
-                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() + (hp.coeffs() * BackPlaneOnly)) );
-                        sim->orbit(Quaternionf(YRotation( -stereoDepth * BackPlaneOnly )));
-                        ///(Quaternionf(YRotation( CelFrontPlaneDepthv ))); maybe useful on HMDs
-                        if (StereoMode == 1 )
+                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() + (hp.coeffs() * stereo->allinverted)) );
+                        sim->orbit(Quaternionf(YRotation( -stereo->fdepth * stereo->allinverted )));
+
+                        if (stereo->mode == 1 )
                             glColorMask(GL_FALSE,GL_TRUE,GL_TRUE,GL_TRUE);
                         sim->render(*renderer);
-                        observer.setOrientation (Quaterniond( CelCullingVPos.coeffs() - (hp.coeffs() * BackPlaneOnly )) );
-                        sim->orbit(Quaternionf(YRotation( stereoDepth * BackPlaneOnly )));
-                        ///(Quaternionf(YRotation( -CelFrontPlaneDepthv )));
-                        RightEye=true;
+                        observer.setOrientation (Quaterniond( CelCullingVPos.coeffs() - (hp.coeffs() * stereo->allinverted )) );
+                        sim->orbit(Quaternionf(YRotation( stereo->fdepth * stereo->allinverted )));
+                        stereo->rightEye=true;
                     }
                     else
                     {
-                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() - (hp.coeffs() * BackPlaneOnly )) );
-                        sim->orbit(Quaternionf(YRotation( stereoDepth * BackPlaneOnly )));
-                        ///(Quaternionf(YRotation( -CelFrontPlaneDepthv )));
-                        if (StereoMode == 1 )
+                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() - (hp.coeffs() * stereo->allinverted )) );
+                        sim->orbit(Quaternionf(YRotation( stereo->fdepth * stereo->allinverted )));
+                        if (stereo->mode == 1 )
                             glColorMask(GL_TRUE,GL_FALSE,GL_FALSE,GL_TRUE);
                         sim->render(*renderer);
-                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() + (hp.coeffs() * BackPlaneOnly )) );
-                        sim->orbit(Quaternionf(YRotation( -stereoDepth * BackPlaneOnly )));
-                        ///(Quaternionf(YRotation( CelFrontPlaneDepthv )));
-                        RightEye=false;
+                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() + (hp.coeffs() * stereo->allinverted )) );
+                        sim->orbit(Quaternionf(YRotation( -stereo->fdepth * stereo->allinverted )));
+                        stereo->rightEye=false;
                     }
                     break;
-                case 4: // crosseyed view
-                    RightEye=false;
-                        glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+                case 4: // side by side (crosseyed view)
+                    stereo->rightEye=false;
                     splitView(View::VerticalSplit);//TODO, should be a sspecial "splitView" with verbosity off and Splitview-Menu disabled
                     break;
-                case 5: // foobar shutter glasses maybe others depends on hw drivers
-                    glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
+                case 5: // more cases for diffenrent shutter glasses, hmd, above under etc. <-TODO
+
                     break;
             }
         }
@@ -2723,7 +2772,7 @@ void CelestiaCore::draw()
         }
     }
 
-    else //splitted views
+    else ///splitted views | sidebyside/aboveunder stereo
     {
         glEnable(GL_SCISSOR_TEST);
         for (list<View*>::iterator iter = views.begin();
@@ -2743,26 +2792,33 @@ void CelestiaCore::draw()
                 renderer->resize((int) (view->width * width),
                                  (int) (view->height * height));
                 /// stereo crossed-eyed interlaced
-                if ( (StereoMode==4) && (views.size()==3) )
+                if ( ( stereo->mode == Stereo::sidebyside_c ) && (views.size()==3) )
                 {
                     Observer& observer = sim->getObserver();
                     Vector3d hv(0.0, CelFrontPlaneDepthv, 0.0);
                     Quaterniond CelCullingVPos = observer.getOrientation();
                     Quaterniond hp = Quaterniond(0.0, hv.x(), CelFrontPlaneDepthv, hv.z()) * CelCullingVPos;
-                    //view->observer=&observer;
-                    if ( ! RightEye)
+                    if ( ! stereo->rightEye)
                     {
-                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() + (hp.coeffs() * BackPlaneOnly)) );
-                        sim->orbit(Quaternionf(YRotation( -stereoDepth * BackPlaneOnly)));
+                        ///2nd step setting orientation could be skipped, due to having a better stereo geometry
+                        //(mouse pointer with z value in mind) I keep this way for now
+                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() + (hp.coeffs() * stereo->allinverted)) );
+                        sim->orbit(Quaternionf( YRotation( - stereo->fdepth * stereo->allinverted ) ) );
                         sim->render(*renderer);
-                        RightEye=true;
+
+                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() - (hp.coeffs() * stereo->allinverted)) );
+                        sim->orbit(Quaternionf( YRotation( stereo->fdepth * stereo->allinverted ) ) );
+                        stereo->rightEye=true;
                     }
                     else
                     {
-                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() - (hp.coeffs() * BackPlaneOnly)) );
-                        sim->orbit(Quaternionf(YRotation( stereoDepth * BackPlaneOnly )));
+                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() - (hp.coeffs() * stereo->allinverted)) );
+                        sim->orbit(Quaternionf( YRotation( stereo->fdepth * stereo->allinverted ) ) );
                         sim->render(*renderer);
-                        RightEye=false;
+
+                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() + (hp.coeffs() * stereo->allinverted)) );
+                        sim->orbit(Quaternionf( YRotation( - stereo->fdepth * stereo->allinverted) ) );
+                        stereo->rightEye=false;
                     }
 
                 }

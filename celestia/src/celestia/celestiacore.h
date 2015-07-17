@@ -1,6 +1,6 @@
 // celestiacore.h
 // 
-// Copyright (C) 2001-2009, the Celestia Development Team
+// Copyright (C) 2001-2015 the Celestia Development Team
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -81,8 +81,79 @@ class View
 };
 
 
+///------------------------------------------------
+class Stereo
+{
+ public:
+    enum pMode {
+        none,
+        anaglpyh,
+        shutter,
+        shutter_i,
+        sidebyside_c,
+        OFF,
+        sidebyside_p,
+        aboveunder,
+        whatever,
+        };
+    enum valIndex {
+        depth           = 0,
+        backplaneRelief = 1,
+        frontplane      = 2,
+        foobar          = 3
+    };
+    enum flagIndex {
+        inverted        = 0,
+        simplesettings  = 1,
+        uirighteye      = 2,
+        orbit           = 3,
+        rotate          = 4,
+        rotinv          = 5
+    };
+    Stereo(int);
+    ~Stereo();
+    void init();
+    void setStereoVal(int q_index,int q_value);
+    int getStereoVal(int q_index);
+    void setStereoFlag(int q_index, bool q_checked);
+    int getMode();
+    void setMode();
+    void setMode(int mode);
+
+ public:
+    bool uiVisible;
+    bool changed;
+    int mode;
+    int uiVals[4];
+    int uiFlags[6];
+    static const int maxDepth = 99;
+    static const float DepthFactor = 0.000290f;
+    float fdepth;
+    float s_stereoDepth; //internal sterepDepth uival*factor
+    ///float FrontPlaneDepthv= 0.0f;
+    ///static const int BackPlaneRelief = 8
+    bool rightEye;
+    signed int allinverted;
+//NOTE s
+// class should belong to core not to render or should go to its own cpp(h file.
+/* "fdepth" represents eyes gap (~cm) depending on distance to near plane
+ which is not really based on scientific formular but a good experience value.
+ A scientific factor is much overkill cause it depends on human eye gap,distant to screen,
+ screen(s) size and also virtual distances within in the sim,*/
+/*
+The complete 'frustum' (culled retangular) looks like a shorted hourglass (see cel_frustum.png), which doesn't
+matter on non-stereo projection, and due to the real big distances (we also could not resolve depth information
+by looking into star sky), it doesn't disturb while being in "near" situations
+It matters on fast journeys and travelling through deep space.
+So we need to figure out, _when_ to toggle right/left rendering process, maybe on
+"speed" and or nearest objects, for back plane(s) which become front plane.
+
+*/
+};
+///------------------------------------------------
 class CelestiaCore // : public Watchable<CelestiaCore>
 {
+
  public:
     enum {
         LeftButton   = 0x01,
@@ -235,9 +306,14 @@ class CelestiaCore // : public Watchable<CelestiaCore>
     void joystickAxis(int axis, float amount);
     void joystickButton(int button, bool down);
     void resize(GLsizei w, GLsizei h);
-    void CelDynamicStereoValues();
+
     void draw();
     void tick();
+
+    //stereo rendering
+    Stereo* stereo;
+    void celDynamicStereoValues();
+    void celStereoChanged();
 
     Simulation* getSimulation() const;
     Renderer* getRenderer() const;
@@ -392,9 +468,8 @@ class CelestiaCore // : public Watchable<CelestiaCore>
     bool showConsole;
     bool lightTravelFlag;
     double flashFrameStart;
-
     Timer* timer;
-
+    
     Execution* runningScript;
     ExecutionEnvironment* execEnv;
 
@@ -467,12 +542,14 @@ class CelestiaCore // : public Watchable<CelestiaCore>
     Selection lastSelection;
     string selectionNames;
 
+    
 #ifdef CELX
     friend View* getViewByObserver(CelestiaCore*, Observer*);
     friend void getObservers(CelestiaCore*, std::vector<Observer*>&);
     friend TextureFont* getFont(CelestiaCore*);
     friend TextureFont* getTitleFont(CelestiaCore*);
 #endif
+
 };
 
 #endif // _CELESTIACORE_H_
