@@ -1,7 +1,7 @@
 // qtappwin.cpp
 //
-// Copyright (C) 2007-2008, Celestia Development Team
-// celestia-developers@lists.sourceforge.net
+// Copyright (C) 2007-2015, Celestia Development Team
+
 //
 // Main window for Celestia Qt front-end.
 //
@@ -43,7 +43,7 @@
 #include <cassert>
 #include "qtappwin.h"
 #include "qtglwidget.h"
-#include "qtpreferencesdialog.h"
+
 #include "qtsolarsystembrowser.h"
 #include "qtcelestialbrowser.h"
 #include "qtdeepskybrowser.h"
@@ -52,11 +52,16 @@
 #include "qtcelestiaactions.h"
 #include "qtinfopanel.h"
 #include "qteventfinder.h"
+
+#include "qtstereosettings.h"
+
 #include "qtsettimedialog.h"
+
 //#include "qtvideocapturedialog.h"
 #include "celestia/scriptmenu.h"
 #include "celestia/url.h"
 #include "qtbookmark.h"
+#include "qtpreferencesdialog.h"
 
 #if defined(_WIN32)
 #include "celestia/avicapture.h"
@@ -149,6 +154,7 @@ CelestiaAppWindow::CelestiaAppWindow() :
     helpMenu(NULL),
     infoPanel(NULL),
     eventFinder(NULL),
+    stereoSettings(NULL),
     alerter(NULL),
     m_preferencesDialog(NULL),
     m_bookmarkManager(NULL),
@@ -324,6 +330,13 @@ void CelestiaAppWindow::init(const QString& qConfigFileName,
     eventFinder->setVisible(false);
     //addDockWidget(Qt::DockWidgetArea, eventFinder);
 
+    stereoSettings = new StereoSettings(m_appCore, _("Stereo Settings"), this);
+    stereoSettings->setObjectName("stereo-settings-panel");
+    stereoSettings->setAllowedAreas(Qt::LeftDockWidgetArea |
+                                    Qt::RightDockWidgetArea);
+    addDockWidget(Qt::RightDockWidgetArea, stereoSettings);
+    stereoSettings->setVisible(false);
+    
     // Create the time toolbar
     TimeToolBar* timeToolBar = new TimeToolBar(m_appCore, _("Time"));
     timeToolBar->setObjectName("time-toolbar");
@@ -380,6 +393,7 @@ void CelestiaAppWindow::init(const QString& qConfigFileName,
     viewMenu->addAction(toolsDock->toggleViewAction());
     viewMenu->addAction(infoPanel->toggleViewAction());
     viewMenu->addAction(eventFinder->toggleViewAction());
+    viewMenu->addAction(stereoSettings->toggleViewAction());
     viewMenu->addSeparator();
     
     QAction* fullScreenAction = new QAction(_("Full screen"), this);
