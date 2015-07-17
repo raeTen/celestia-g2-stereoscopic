@@ -94,7 +94,7 @@ class Stereo
         OFF,
         sidebyside_p,
         aboveunder,
-        whatever,
+        whatever
         };
     enum valIndex {
         depth           = 0,
