@@ -133,7 +133,6 @@ void StereoSettings::slotRefreshValues( QWidget* pWidget )
             actLabel->setText( sliderlabellist[nr.toInt()] + QString(" ")\
                                 + QString::number(actSlider->value() ) );
             appCore->stereo->setStereoVal( nr.toInt()-1, actSlider->value() );
-            /*nt_debug appCore->stereo->printVals();*/
         }
     }
     QCheckBox* actCheckbox = qobject_cast<QCheckBox*>(pWidget);
