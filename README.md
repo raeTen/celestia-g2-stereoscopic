@@ -126,15 +126,19 @@ irc.freenode.net/#celestia
     Just for the fun on computing, you know.
     Or. if there's anyone out there who has figured out, help is appreciated,
     afaik we are lack of some ansi escape codes …~~
-# Updated notes on shutters [9 2015]
+## Updated notes on shutters [9 2015]
     After some more investigations on nVidia shutters, I have created an open letter
     to nVidia, because there is defacto no technical reason why they do not support
     quadbuffering on Geforces lastly with Linux and Co. I knew about that in abstract,
     now I know from my practical experience.
+    
     [open letter to nVidia](https://github.com/raeTen/celestia-g2-stereoscopic/open-letter-to-nvidia.md)
+    
     Shutter-glasses in general require quadbuffering for the following reasons:
-        * no need for "dirty" platform-dependent tricks
-        * keeping the first defined eye render process in sync with shutters in stable manner
+    
+    * no need for "dirty" platform-dependent tricks
+    * keeping the first defined eye render process in sync with shutters in stable manner
+    
     quadbuffering also makes it a lot of easier to modify any 3D-application to be stereoscopic
     even if this is not required for other projection types than shutter-glasses.
     After all I can also state that there is no real "problem" having quadbuffering on Geforces at all.
