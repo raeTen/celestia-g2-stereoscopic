@@ -113,20 +113,42 @@ irc.freenode.net/#celestia
 
 3. support for shutter-glasses
 
-    At least vblank-synced should work, but experimental,
+    ~~At least vblank-synced should work, but experimental,
     I don't own a quadbuffer, but sli consumer, so I cannot test.
     On weak machines it will flicker sometimes, it won't if celestia
     could drive the sync to the glasses itself.
     Hopefully nvidia tells us how to drive their ir-transmitter finally,
-    to have more fun with Linux and their consumer cards.
+    to have more fun with Linux and their consumer cards.~~
     I'd love to hear from nvidia Linux+consumercard+stereo=no problem,
-    In the end, we would just need to know how to sync the glasses via usb without
+    ~~In the end, we would just need to know how to sync the glasses via usb without
     having a vsync signal to it, in other words syncing by software,
     instead of hooking and modifying the scene by the gpu-driver like they do with directx
     Just for the fun on computing, you know.
     Or. if there's anyone out there who has figured out, help is appreciated,
-    afaik we are lack of some ansi escape codes …
-
+    afaik we are lack of some ansi escape codes …~~
+# Updated notes on shutters [9 2015]
+    After some more investigations on nVidia shutters, I have created an open letter
+    to nVidia, because there is defacto no technical reason why they do not support
+    quadbuffering on Geforces lastly with Linux and Co. I knew about that in abstract,
+    now I know from my practical experience.
+    [open letter to nVidia](https://github.com/raeTen/celestia-g2-stereoscopic/open-letter-to-nvidia.md)
+    Shutter-glasses in general require quadbuffering for the following reasons:
+        * no need for "dirty" platform-dependent tricks
+        * keeping the first defined eye render process in sync with shutters in stable manner
+    quadbuffering also makes it a lot of easier to modify any 3D-application to be stereoscopic
+    even if this is not required for other projection types than shutter-glasses.
+    After all I can also state that there is no real "problem" having quadbuffering on Geforces at all.
+    Let's see how nVidia reacts, if the reaction is negative at that point, I'm going to
+    obtain an competioner product with quadbuffering support on Linux. After that I'll be
+    able to make celestia ready for shutterglasses at all. BTW the code works with lack
+    of keeping "first eye" in sync with blanking. I worked around that issue, but that
+    would be "Linux only". That is not what we want, because I just love the open-source community
+    for the paragon of democracy. The fact and decision to develop with Linux only, doesn't mean that
+    I want to exclude any other platform. I am pretty sure that this is our common position.
+    The religious fundamentalists ever could be found in the "Windows only-camp", that's nothing
+    I stand for.
+    …
+    
 4.  roadmap with topic to stereo:
     support for headmounted-displays (and other displays)
     internal 3D mouse-pointer (3D HID needed )
@@ -173,7 +195,7 @@ OR within celestia importer would be very nice. I don't have a clue
 in detail yet, so helping out with this is very very much aapreciated.
 If anyone has got a copycat "cmod-exporter".py for blender (2.4 <) -
 please make it public again, it was linked within the original forum,
-which is down :-/
+which is still down :-/
 Porting that to blender 2.7.x > should be the easiest way.
 
 
