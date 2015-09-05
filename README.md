@@ -132,7 +132,7 @@ irc.freenode.net/#celestia
     quadbuffering on Geforces lastly with Linux and Co. I knew about that in abstract,
     now I know from my practical experience.
     
-    [open letter to nVidia](https://github.com/raeTen/celestia-g2-stereoscopic/open-letter-to-nvidia.md)
+    [open letter to nVidia](https://github.com/raeTen/celestia-g2-stereoscopic/blob/master/open-letter-to-nvidia.md)
     
     Shutter-glasses in general require quadbuffering for the following reasons:
     
