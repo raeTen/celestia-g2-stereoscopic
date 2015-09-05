@@ -38,7 +38,7 @@ to be better supported.
    "know".
 Don't get me wrong, even when I prefer open sources at all, I am
 using your proprietary Linux-driver, which just works fine and
-stable, and I also appreciate the straigt fixing log etc.
+stable, and I also appreciate the straight fixing log etc.
 So I do not complain about the driver, but your youngest policies.
 
 ## Details
@@ -65,7 +65,8 @@ It's a (maybe unintended) discrimination against F/OSS and the real
 industrial standards, and you nVidia manifestly forgot your reputation
 to be the "openGL"-company, don't you?
 In abstract you started trying to control F/OSS with this policy,
-but the result will be the opposite what I am trying to explain.
+but the result will be the opposite and not what you might expect
+by your limitations. - what I am trying to explain in detail.
 
 Me and a lot of other with good technical backgound knowlegde knew
 the whole time, that there never was a _technical_ reason to limitate
