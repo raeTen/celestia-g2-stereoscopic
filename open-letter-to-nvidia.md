@@ -115,7 +115,7 @@ things in the past. All engineers know that scientific progress is based
 on open standards and open ideas.
 Evidently some PR-people and so called managers forgot
 about that, might be owing to the fact that they do not have
-(any) technical knowledge and begin to lie or comimg to wrong
+(any) technical knowledge and begin to lie or coming up with totally wrong
 decisions. "Windows only" was/is/will be a wrong decision.
 It also always has been a wrong decision to ostracise the opensource-world.
 I don't write this all to tell you that I want you to
