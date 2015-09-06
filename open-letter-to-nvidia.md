@@ -16,7 +16,7 @@ was the voodoo2 - but you should know your own history at all.
 ## How you can help (and help yourself)
 I read about your question how you could help out "Linux"
 to be better supported.
-## The answers in short, and the first is really essential:
+## The answers in short, and the first one is simply essential:
 
 1. Please just unlock openGL(+) quadbuffering on Geforces with all -"drivers"
    finally. Most of us own Geforces and some of us know it's not only
