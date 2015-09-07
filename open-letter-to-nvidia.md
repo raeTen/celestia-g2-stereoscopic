@@ -1,5 +1,4 @@
-# Stereoscopics, nVidia 3dVision and their disconcerting
-policies.
+# Stereoscopics, nVidia 3dVision and their disconcerting policies.
 
 ## About this rant
 This represents an open letter to nVidia
@@ -18,7 +17,7 @@ I read about your question how you could help out "Linux"
 to be better supported.
 ## The answers in short, and the first one is simply essential:
 
-1. Please just unlock openGL(+) quadbuffering on Geforces with all -"drivers"
+1. Please just unlock openGL(+) quadbuffering on Geforces with all "drivers"
    finally. Most of us own Geforces and some of us know it's not only
    the "price" to avoid a Quadro, there are other reasons which I don't
    explain at this position.
@@ -35,7 +34,7 @@ to be better supported.
    I have full understanding for keeping secrets belonging
    to newer features in hardware and so on. But there's no reason to
    hide things which are common and even your competitions
-   "know".
+   know.
 Don't get me wrong, even when I prefer open sources at all, I am
 using your proprietary Linux-driver, which just works fine and
 stable, and I also appreciate the straight fixing log etc.
@@ -76,7 +75,7 @@ you'll admit that this point is a matter of software, in that
 case a matter of your driver. You officially conceded exactly that point
 in May 15 by "suddenly" supporting your Geforces with openGL
 quadbuffering. The really awful smelling thing is "Windows only".
-I don't hate Windows I hate things like Windows only.
+I don't hate Windows, I hate things like Windows only.
 Windows never has been a good reference and is far beyond what
 I'd call "professional". But this is another story.
 *Where* is the point to do so? Did you expect opensource people
@@ -85,6 +84,7 @@ Geforces are "better" because of their targets?
 Geforces are used in professional environments, too, what is
 hard to slip. To be honest, you're disgracing yourself by trying to mark
 quadbuffering to be a "professional" feature, dear nVidia.
+And we already know who tried to kill "Quadbuffering" in the past.
 
 Some want to tell us "Quadbuffering" is dead. I say, quadbuffering
 is that thing we need in future. I don't wonder that "virtual reality"
@@ -123,7 +123,7 @@ through out an opensource-driver, then again it's a
 good idea to help out the nouveau-devs on the other hand of course.
 
 This is just to point out some well-intentioned advice.
-Mainly, I want you to support the openGL(+) quadbuffering
+Mainly I want you to support the openGL(+) quadbuffering
 on Linux _and_ Geforces, too, and do so without letting developers having
 a "unlock-key" for the api. It's just about your shutter-glasses
 in the end. It's no secret to me (and others) how they work, neither
@@ -156,7 +156,7 @@ There are a lot of projects which we could modify for stereoscopics
 _and_ your shutters besides the other projection types.
 We won't claim them to be "3dvision-ready", but we would mark
 them as "supports nvidia shutter glasses".
-After you have rechecked those project, you are free to mark
+After you have rechecked those projects, you are free to mark
 them "3DVision ready" or give them another "PR-Name".
 Is there a better way to have a good promotion without any
 expenses?
@@ -172,10 +172,10 @@ As I stated above, shutters require quadbuffering to be
 platform-independent. Any other stereo projection type
 doesn't, BUT quadbuffering makes it all easier.
 And there are a lot really good GL coders out there, guess
-what their main development platform is!
+what their main development platform and GPU-hardware is!
 
-Of course this all is not your part, and not your responsibilty
-in the matter of "health". I am sure we always will disclaim
+Of course this all is not only your part, and not your responsibilty
+in the matter of "health". I am sure we all always will disclaim
 these things in a way which suits you as company fine, too.
 
 Never forget the past, there were mostly people like me who
@@ -191,38 +191,37 @@ ALL platforms with Geforce products. It's "just" a little bit
 memory handling within your driver. and I guess (not really guessing),
 you just need to remove the Geforces IDs from the "blacklist", the
 API has been "ready" all the time.
-I wonder that you blacklist your own products!
+I wonder that you blacklist your own products from capabilities
+which they are able to do!
 
 You even might flag it as an experimental feature, which is not
 enabled by default (like in Windows), if you are afraid of any "warranty" things.
-And I assume your newer boards and hardware to be safe enough, even when
-we have to tinker around with the hardware-near things.
 
 You are manufactoring hardware, and should 
 *NEVER* limit anything to a specific platform, this is what I
 call the opposite of being professional.
 To let F/OSS developer beg for an unlock-key is a policy which
-obstracts the virtual realtiy development. 
+obstracts the "virtual realtiy" development. 
 
 And well, it might be an useful option to unlock geforce boards with
 a minimum of let's say 1GB memory onboard. I would understand
 a limitation like that.
 
 What about unlocking quadbuffering by
-Option Stereo "xx"
+
+Option "Stereo" "xx"
+
 within xorg.conf?
+One of this option value could be just for enabling th qb.
 To be exact, we even would not need your Linux-driver to take
-care about the IR-Transmitter within openGL applications,
-it would be a nice to have of course.
-BTW, in abstract we are lack of a standard relating
-left/right rendering in scope of stereoscopics at all.
+care about the IR-Transmitter within openGL applications.
 
 We just don't want to beg you for an api key to make
 things like celestia and many other projects ready for stereoscopics
 with your shutterglasses.
-BTW. I got it to work without quadbuffering, but I want software
-like celestia to be platform-independent, and your policy
-inhibits exactly this point, too.
+BTW. I got it to work without quadbuffering on my geforce, but I want
+software like celestia to be platform-independent, and your policy
+inhibits exactly this point, too. What a mess!
 
 Letting user/customer decide what they want is the way,
 and it's not only me who is fed up to the back teeth with
@@ -235,10 +234,10 @@ It's already "freely" available but again "Windows only".
 Why?
 You won't hurt yourself to host the binary as single file
 to be used with any openGL software.
-Where did you lost the good spirit, nVIdia?
+Where did you lost the good spirit, nVidia?
 Nobody else than your CUSTOMERs would take advantage of that firmware.
 Wait, we could use your glasses with GPUs from your competitions.
-Well, *the* reason to do so, is *your* policy "Quadro only".
+Well, **the** reason to do so, is **your** policy "Quadro only".
 This policy is just scaring away some of your important
 customers. You're management might think it's a minor problem to loose
 a "few" customers. But I am talking about those few "customers"
@@ -252,7 +251,7 @@ You cannot of course.
 So why are you kicking the OSS-development at all in the teeth
 instead of carry on binding them to your products?
 I am against dependencies in general, so you might ask
-yourself, why I ask you *such* a question.
+yourself, why I ask you **such** a question.
 
 
 ###Shutters and health:
@@ -274,17 +273,22 @@ for using shutterglasses at all. Even with 120Hz we have
 out a sickness or a headache while using *this*
 or even more while using any electronics in general. 
 
-Well, I just remembered that you is settled down in a country
-where people sued fabricators for dead cats in microwaves.
-Lawmakers which make those stupid things justiciable should
+###another "guess"
+Well, I just remembered that you has been settled down in a
+country where people sued fabricators for dead cats in microwaves.
+Lawmakers making those stupid things justiciable should
 be thrown to neolithic age. There *might* be a spurious
 correlation between something like that and the missing
-quadbuffering, but there isn't.
+quadbuffering, but there isn't - hopefully. If so, you need
+to think about moving to a country where something like that
+is clearly declared as nonsense.
 
 ##Conclusion
-Supporting quadbuffering in general would be your
-*unique selling proposition*. This point poses your
+Supporting quadbuffering in general represents your
+*unique selling proposition*. It poses your
 top-ranked card in the market, just draw that card.
+In exchange of doing so, you'll get a lot of open code and
+ideas for the future.
 
 
 Put the fun back on computing, nVidia!
