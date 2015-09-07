@@ -24,8 +24,8 @@ to be better supported.
    explain at this position.
 
 2. Please distribute the Firmware of the glasses IR-Transmitter not
-   in a "Windows only" style.
-   A simple download link knitted with your disclaimer
+   like "Windows only".
+   A simple direct download knitted with your disclaimer
    belonging to the use of shutterglasses (purly in general) should
    suit any wishes.
    Or you might just put a free distribution licence on it.
@@ -41,7 +41,7 @@ using your proprietary Linux-driver, which just works fine and
 stable, and I also appreciate the straight fixing log etc.
 So I do not complain about the driver, but your youngest policies.
 
-## Details
+### Details
 Your good Linux support (using "Linux" here substitutionally for
 any opensource software/OS) and even other platforms than Windows,
 made me faithful.
@@ -252,10 +252,10 @@ You cannot of course.
 So why are you kicking the OSS-development at all in the teeth
 instead of carry on binding them to your products?
 I am against dependencies in general, so you might ask
-yourself, why I ask you such a question like this.
+yourself, why I ask you *such* a question.
 
 
-#Shutters and health:
+###Shutters and health:
 There are several issues of course. IMHO there never will
 be really serious harms. It's all about getting sick from
 "stereoscopics" at all, or getting headache from any kind
@@ -271,15 +271,21 @@ human health with lasting-effects.
 We all just have to put out warnings in the sense of hints
 for using shutterglasses at all. Even with 120Hz we have
 30Hz flickering on each eye, right? Nobody could rule
-out a sickness or a headache while using this
-or using any electronics in general. 
-While writing this rant, I remembered that you nVidia,
-is settled down in a country where people sued fabricators
-for dead cats in microwaves. Lawmakers which make those
-stupid things justiciable should be thrown to neolithic age.
-There *might* be a spurious correlation between something like
-that and the missing quadbuffering, but there isn't.
-Maybe I err on this conclusion, if so, you've to tell us.
+out a sickness or a headache while using *this*
+or even more while using any electronics in general. 
+
+Well, I just remembered that you is settled down in a country
+where people sued fabricators for dead cats in microwaves.
+Lawmakers which make those stupid things justiciable should
+be thrown to neolithic age. There *might* be a spurious
+correlation between something like that and the missing
+quadbuffering, but there isn't.
+
+##Conclusion
+Supporting quadbuffering in general would be your
+*unique selling proposition*. This point poses your
+top-ranked card in the market, just draw that card.
+
 
 Put the fun back on computing, nVidia!
 Thank you in advance.
