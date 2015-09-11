@@ -36,7 +36,7 @@ Windows, it represents the contrary of your latest policies.
    Or you might just put a free distribution licence on it.
    I'm pretty sure this will keep you in community's favour.
 
-3. Stop trying to hide secrets which aren't secrets.
+3. Please stop trying to hide secrets which aren't secrets.
    I have full understanding for keeping secrets belonging
    to new features in hardware and so on. But there's no reason to
    hide  things which are common and even your competitions
@@ -44,6 +44,18 @@ Windows, it represents the contrary of your latest policies.
    I prefer open sources at all, but I am using your proprietary
    Linux-"driver", which just works fine and stable, and I also appreciate
    the straight fixing log etc.
+
+4. You also shoud stop abusing "professionalism". It's not your task to
+   decide what is professional and what is not since you are building hardware.
+   Building hardware in a professional way includes the support of
+   ideally any software. This was your creed up to 2010 but then you
+   got on a wrong path. It's not up to you, if your products are
+   being used in a professional way or not. That always has been
+   a decision of your customers.
+   "Professional" often is associated with earning money.
+   But that's just a blended view from a certain ideology which
+   I never will support. Maybe you might re-think about
+   "profession" at all to understand what is meant by this.
 
 ### Details
 Your good Linux support in the past made me faithful.
@@ -60,13 +72,17 @@ openGL+ quadbuffering.
 There are a lot of queries concerning this point within your forums.
 And when it comes to the question about quadbuffering with your
 Linux-"driver", your mechanical answer is "supported on Quadro Cards".
-Well, that is not a lie, but it becomes very smelly when looking more deeply.
+Well, that is not a lie, but it becomes very very smelly when looking more deeply.
 It would be a lie, to tell us that it doesn't or won't work on
-"Consumer" Cards. We know it works.
+"Consumer" Cards. We know it works!
 
 It's a (maybe unintended) discrimination against F/OSS and the real
 industrial standards, and you nVidia manifestly forgot your reputation
-to be the "openGL"-company, don't you?
+to be the "openGL"-company, don't you? And you can't disclaim the fact,
+that there also a lot of open-source code flowed into your hardware.
+We all know that it is software first what flows into hardware, which
+pictures a development process over decades, but you should keep that
+like me in your mind just to avoid wrong decisions.
 In abstract you started **trying** to control F/OSS with this policy,
 but the result will be the opposite and not what you might expect
 by your limitations. - what I am trying to explain in detail.
@@ -77,10 +93,10 @@ quadbuffering to Quadros. One with less knowledge could believe
 so, but if you'd be straight to yourself and to your CUSTOMERs,
 you'll admit that this point is a matter of software, in that
 case a matter of your driver. You officially conceded exactly that point
-in May 15 by suddenly supporting your Geforces with openGL
+in May 2015 by suddenly supporting your Geforces with openGL
 quadbuffering. The really awful smelling thing is "Windows only".
 I don't hate Windows, I hate things like Windows only.
-Windows never has been a good reference and is far beyond what
+Windows never has been a good reference to me and is far beyond what
 I'd call "professional". I am sorry for that view but its based on
 profound knowledge of the trade and just another story which is
 at issue tangentially.
@@ -104,9 +120,9 @@ which would be "cheaper" than a quadro.
 Yes strike, having this snakeoil-catapult is the way to deal with openGL.
 Could you hear the broad laughter?
 It's just a boldness to support openGL-things on Windows only!
-I don't want to bash against Windows, I just don't want to use it
-anymore and I don't want to discuss that point. That all does not
-mean that I want to exclude Windows from being there, for the sake
+I don't want to bash against Windows, especially not against Windows-User,
+I just don't want to use Windows anymore and I don't want to discuss that point.
+And I don't want to exclude Windows from just being there, for the sake
 of varity I am fine with its existence, and finally we are talking
 about a **platform-independent** API here.
 
@@ -127,6 +143,7 @@ Evidently some PR-people and so called managers forgot
 about that, might be owing to the fact that they do not have
 (any) technical knowledge and begin to lie or coming up with totally wrong
 decisions. "Windows only" was/is/will be a wrong decision.
+We will never tolerate any kind of monopolistic dictation!
 It also always has been a wrong decision to ostracise the opensource-world.
 I don't write this all to tell you that I want you to
 through out an opensource-driver, then again it's a
@@ -140,8 +157,8 @@ Mainly I want you to support the openGL(+) quadbuffering
 on Linux _and_ Geforces, and do so without letting developers having
 a "unlock-key" for the api. It's just about your shutter-glasses
 in the end. It's no secret how they work, neither
-in abstract nor in technical details, I'd be able to write
-down the hardware specs for your shutter-glasses including the
+in theory nor from practice - I'd be able to write
+down the hardware specification for your shutter-glasses including the
 IR-pcm things, but that's definitivly your job, I am
 just a customer who gave you money, last but no least for two of your
 shutter glasses, and a lot of Geforces in the past. And now you want me,
@@ -154,11 +171,11 @@ We managed to have example software which controls the glasses even
 with 60Hz in vertical and doublebuffering and windowed. But keeping the frames and
 their "correct" eye-render process in sync is just possible by "terrible" hacks
 without quadbuffering.
- a) "terrible" because not platform-independent
-.b) "terrible" because even I do not want shuttering
+ * "terrible" because not platform-independent
+.* "terrible" because even I do not want shuttering
      with a vertical raster scan lower than 100Hz.
 
-All your customer care things e.g. tending to "120Hz" with shuttering
+All your customer-care things e.g. tending to "120Hz" with shuttering
 have my sympathy, but it is just a small part of "virtual reality",
 and a part of a way to an aim.
 There are a lot of projects which we could modify for stereoscopics
@@ -195,21 +212,22 @@ these things in a way which suits you as company fine, too.
 I'm raising this point, because it *might* be reason for the
 artificial limitations.
 And it is **your** part to support your hardware by giving us
-an API, otherwise the hardware becomes worthless.
+an **API which is free from any kind of ideology**,
+otherwise the hardware becomes worthless.
 
 ## Blacklisting own products
-Lack of quadbuffering on modern gpu-boards is just very much
+Lack of quadbuffering on modern GPU-boards is just very much
 beyond any comprehension.
 We are talking about GPU-RAM memory management which
 is already part of your driver. After all my researching I am
-sure that you just need to re-modify a blacklist within
+sure that you just need to re-modify (kick) a blacklist within
 your driver, and overall I wonder that you blacklist your
 own products. There's no better way to trip yourself up.
 What the heck is going on within your manangement?
 
 ## Retrieving situation and harmony
 Support quadbuffering at all.
-Flag it as an experimental feature, which is not
+Just flag it as an experimental feature, which is not
 enabled by default (like you do under Windows),
 if you are afraid of any "warranty" things.
 
@@ -219,16 +237,16 @@ Option "Stereo" "xx"
 
 within xorg.conf?
 
-One of this option value could be there just to enable the quadbuffer pipe.
+One of this option value should be there just to enable the quadbuffer pipe.
 To be exact, we even *would* not need your Linux-driver to take
-care about the IR-Transmitter within openGL applications. The value
+care about the IR-transmitter within openGL applications. The value
 of 10 e.g. makes my acer tft sending the pcm, but we need to have the
-ability to control the swapping. I don't expect that this is
+ability to control the swapping more nativly. I don't expect that this is
 new to you.
 We just don't want to beg you for an api key to make
 things like celestia and many other cool platform-independent projects
-ready for stereoscopic view - with your shutterglasses.
-BTW. I got it to work without quadbuffering on my geforce, but I want
+ready for stereoscopic view -> with your shutterglasses.
+BTW. I got it to work without quadbuffering on my geforces, but I want
 software like celestia to be platform-independent, and your policy
 inhibits exactly this point, too. What a mess! That's all against
 your commitment "not to forget the 'Linuxer'".
@@ -240,7 +258,7 @@ the policies where user/customer has no choices.
 And we all know where that latter evil mentality comes
 from - don't nVidia - don't follow these fatheads.
 
-The second thing is the firmware for the IR-transmitter.
+The other main thing is the firmware for the IR-transmitter.
 It's already "freely" available but again "Windows only".
 Why?
 You won't hurt yourself to host the binary as single file
@@ -252,14 +270,17 @@ This policy is just scaring away some of your important
 customers. You're management might think it's a minor problem to loose
 a "few" customers. But I am talking about those few "customers"
 who recommended your hardware for a very long time.
+And the latter context is not restricted to "Linux"-community, you
+also have a lot of windows customers with very good technical knowlege.
+You are going to disaffect them by some of your latest policies, too.
 
 It's even a question of time, when the opensource community has
-its own firmware for the IR-Transmitter. Would you sue any
+its own firmware for the IR-transmitter. Would you sue any
 customer for doing things with _their_ property?
 
 So why are you kicking the OSS-development at all in the teeth
 instead of carry on binding them to your products?
-I am against dependencies in general, so you might ask
+I am against dependencies in general, so you even might ask
 yourself, why I ask you **such** a question.
 
 
@@ -268,7 +289,7 @@ There are several issues of course. IMHO there never will
 be really serious harms. It's all about getting sick from
 "stereoscopics" at all, or getting headache from any kind
 of "flickering". If one is affected, he just won't use
-the things. There will be no harms with lasting effects.
+the things. There'll be no harms with lasting effects.
 Some say, e.g. looking at crosseyed-stereos harms the
 health. That's not true. Squinting is just viewing
 by design. It's more or less weary, nothing more.
@@ -291,7 +312,7 @@ that and the missing quadbuffering, but there isn't - hopefully.
 If so, you should think about moving to a country where something
 like that is clearly declared as nonsense.
 
-##Conclusion
+## Conclusion
 Supporting quadbuffering in general represents your
 *unique selling proposition*. It poses your
 top-ranked card in the market, just draw that card.
@@ -301,10 +322,31 @@ obvios that you are not independent in a way you better
 should be. And sure, there are basicly always dependencies
 in general.
 Anyway, we all should always ensure that these a reduced
-to a minimum. This should be on of the big similarities
+to a minimum. This should be one of the big similarities
 among you and the F/OSS community.
 
-Put the fun back on computing, nVidia!
+
+### OFFTOPIC digression
+Last but not least I just want to be responsive to your
+latest policy belonging tweaking the GPU Hardware.
+ex ante: I'd never tweak/overclock hardware, my way
+to tease out performance from hardware is optimising
+code. But there a lot of technical enthusiasts out there
+who want to do so. Do you really think it's a good idea
+to restrict tweaking/overclocking after all the years
+you've supported that yourself? I doubt that this is a good idea.
+No "normal" user would use tweak-tools at all, only those
+( passably ) knowing what they do are making use of these
+options. All in all your latest policies are posing a
+kind of **dictation** and are just contrary to public policy
+and freedom.
+Please forgive me my harshness here, but you should
+divest yourself of the idea that your customers are
+just stupid. Stop taking your customers
+for idiots, there are enough companies with that cachet.
+
+
+Put the fun back on cg-computing, nVidia!
 Thank you in advance.
 
 
