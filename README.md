@@ -68,14 +68,15 @@ which includes the newer splash.png gimp sources.
 Besides from development you might use my linux 64bit binary, which should
 also work within a 1.6.x installation. Find the installed celestia binary
 copy celestia_stereo_x86_64.bin into there and just run it.
-Check the md5sum, don't run as root... you know.
+You'll need the ./trunc/splash-g2.png within celestia installation path as well.
+Check the md5sum, do NOT run as root ... you know.
 
 ./bin
 
 ## ----------------
 
 As already mentioned, stereoscopic views are working with a known little weakness on travelling _through_ far distances.
-This is a proof of concept on how to modify the engine, to have stereoscopic view, even for head mounted displays later on.
+This is a proof of concept on how to modify the engines roof, to have stereoscopic view, even for head mounted displays later on.
 We don't loose FPS, 'cause the magic is called interlacing. For having realtime stereoscopics on different projection types 
 there is IMHO no other reasonably place than the core itself. For rendering videos I'll implement that thing
 without interlacing, so the videos become more smooth.
