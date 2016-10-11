@@ -1,0 +1,18 @@
+--- celestia.pro	2016-10-11 12:54:57.000000000 +0200
++++ celestia.pro.stereo	2015-06-06 16:03:37.000000000 +0200
+@@ -363,6 +363,7 @@
+     src/celestia/qt/qtbookmark.cpp \
+     src/celestia/qt/qtglwidget.cpp \
+     src/celestia/qt/qtpreferencesdialog.cpp \
++    src/celestia/qt/qtstereosettings.cpp \
+     src/celestia/qt/qtcelestialbrowser.cpp \
+     src/celestia/qt/qtdeepskybrowser.cpp \
+     src/celestia/qt/qtsolarsystembrowser.cpp \
+@@ -380,6 +381,7 @@
+     src/celestia/qt/qtbookmark.h \
+     src/celestia/qt/qtglwidget.h \
+     src/celestia/qt/qtpreferencesdialog.h \
++    src/celestia/qt/qtstereosettings.h \
+     src/celestia/qt/qtcelestialbrowser.h \
+     src/celestia/qt/qtdeepskybrowser.h \
+     src/celestia/qt/qtsolarsystembrowser.h \
