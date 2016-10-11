@@ -1,7 +1,18 @@
 # celestia-g2-stereoscopic
+
+Please read on in the wiki
+
+[celestia-g2-stereoscopic WIKI](https://github.com/raeTen/celestia-g2-stereoscopic/wiki)
+
+I'll use the readme.md for progress informations.
+
+
+## About this
+
 Please first refer to https://github.com/bgodard/celestia-g2
 on how to build (and install).
-## About this
+
+
 This repository just holds my modifications
 for stereoscopics, so you may test or improve them.
 I'm busy with blender and other building yards at the moment, so I decided to publish
