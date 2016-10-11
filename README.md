@@ -4,65 +4,97 @@ on how to build (and install).
 ## About this
 This repository just holds my modifications
 for stereoscopics, so you may test or improve them.
-I'm busy with blender at the moment, so I decided to push
+I'm busy with blender and other building yards at the moment, so I decided to publish
 that "unready" code. It's ready enough to enjoy stereoscopics.
-We need only one repository for the project, so I didn't fork or
-clone again.
+We need to have one repository for the project, so I didn't fork.
 
 There are modifications in
 
-* ./celestia/src/celestia/celestiacore.cpp
-* ./celestia/src/celestia/celestiacore.h
-* ./celestia/src/celengine/axisarrow.cpp
-* ./celestia/src/celengine/render.cpp
+* .trunc/src/celestia/celestiacore.cpp
+* .trunc/src/celestia/celestiacore.h
+* .trunc/src/celengine/axisarrow.cpp
+* .trunc/src/celengine/render.cpp
 
-You'd need these 4 files from here within your
-local clone from [celestia-g2](https://gitub.com/bgodard/celestia-g2)
+You'd need these 4 files from here copied to your
+local clone path from [celestia-g2](https://gitub.com/bgodard/celestia-g2)
 and compile it (again). Download as zip (or clone it via git).
+The patched files are working with the origin svn repository trunc as well.
+Since autotools are broken with celestia (on Linux wtf!) at all, you'll need
+qmake before make. I'll take a look at the arising compiler warnings later on, too.
 
 ## Update (7/2015)
-I ported the modifications to a class, and created a small dockable qt widget
+For now we've a stereo class, and a small dockable qt widget
 for stereo settings, so we could easily tinker around with more
 values belonging to stereoscopics. I don't know if we need to
 have updated UI values from core-values, maybe we could skip the shifted
 "core-keys" later on.
+
+Marginal note:
+Please don't mess up stereoscopics with virtual reality, only "marketing"
+does that, and the do not know what VR represents at all.
+
 For the qtwidget you'll need another 5 files
-the new:
-* ./celestia/src/celestia/qt/qtstereosettings.h
-* ./celestia/src/celestia/qt/qtstereosettings.cpp
+the new ones:
+* ./trunc/src/celestia/qt/qtstereosettings.h
+* ./trunc/src/celestia/qt/qtstereosettings.cpp
 
 the updated (just to include the widget):
 
-* ./celestia/src/celestia/qt/qtappwin.h
-* ./celestia/src/celestia/qt/qtappwin.cpp
+* ./trunc/src/celestia/qt/qtappwin.h
+* ./trunc/src/celestia/qt/qtappwin.cpp
 
-and the new splash
+And the patched pro-file celestia.pro (qmake)
 
-* ./celestia/splash-g2.png
+* ./trunc/celestia.pro
+
+and last but not least a "new" splash image which is more compatible with 1bit alpha channeling
+
+* ./trunc/splash-g2.png
+
 ## ---------------
 
-and just overwrite them in your local clone.
+You may just overwrite them in your local clone, but there are patch files in ./patches as well,
+so you could easily see over what I've done in terms of stereoscopics.
 
 If you want to push pixels within splash-g2.png,
-please take a look at  [Celestia-g2-QTSplash](https://github.com/raeTen/celestia-g2-Qtsplash)
+please take a look in 
+
+./splash
+
 which includes the newer splash.png gimp sources.
-Don't use the qt code from there …
 
-I had also changed some colors e.g. for orbit-lines, axis-arrows… -
-to make it more comfortable  while using red-cyan anaglyph-mode.
-Well. old-fashioned and depreacted, but still good, cheap and
-useable at least to begin with stereoscopics.
+## ----------------
 
-As already mentioned, stereo is working with a known
-little weakness on travelling _through_ far distances.
-This is a proof of concept on how to modify the engine,
-to have stereoscopic view, even for head mounted displays later on.
-We don't loose FPS, 'cause the magic is called interlacing.
+Besides from development you might use my linux 64bit binary, which should
+also work within a 1.6.x installation. Find the installed celestia binary
+copy celestia_stereo_x86_64.bin into there and just run it.
+Check the md5sum, don't run as root... you know.
 
-This is developed and tested with Linux, the modifications
-should work on Mac and Win, too, I can't test them, perhaps
-you, the reader, can and will do. 
+./bin
 
+## ----------------
+
+As already mentioned, stereoscopic views are working with a known little weakness on travelling _through_ far distances.
+This is a proof of concept on how to modify the engine, to have stereoscopic view, even for head mounted displays later on.
+We don't loose FPS, 'cause the magic is called interlacing. For having realtime stereoscopics on different projection types 
+there is IMHO no other reasonably place than the core itself. For rendering videos I'll implement that thing
+without interlacing, so the videos become more smooth.
+Doing steroscopics with LUA is possible as well, but we need to be near to hardware
+for shutters hmd and whatever comes up in the future.
+I'll contribute more on this issue, but I don't own a hmd yet, I'm waiting
+for "quadbuffering", and I need a period of time to be in the code again,
+there are several things to do, and I've other ideas which
+
+So there are many of you like me who want celestia to be continued, let's say celestia
+took a well-earned rest ;-).
+At least good software is never "ready" or perfect, and I am pretty sure, we will
+continue this brilliant project. Of course!
+
+
+Essentially my modifications will work on any platform, maybe there are issues which I can't expect 
+without testing.
+e.g. there were issues with Mac and F2/F3 Keys in 2009. Now there's a qt-widget
+##-------------
 Build and use (Linux):
 For testing purposes you even don't need a final "make install", you
 may run the binary out of your local clone path, and solve the -z's issue,
@@ -82,10 +114,9 @@ For now, F-Keys used are:
 
 ~~Platform independent unused keys are rare in celestia, so we should build a stereo-menu later on.~~
 
-BTW: realtime communication rocks, never hesitate to join
-irc.freenode.net/#celestia
+BTW: realtime communication rocks, never hesitate to join irc.freenode.net/#celestia
 
-## Technical Notes
+## Technical Notes for now
     
 1. anaglyphic mode
 
