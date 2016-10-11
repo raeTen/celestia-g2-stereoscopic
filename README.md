@@ -31,7 +31,7 @@ have updated UI values from core-values, maybe we could skip the shifted
 
 Marginal note:
 Please don't mess up stereoscopics with virtual reality, only "marketing"
-does that, and the do not know what VR represents at all.
+does that, and they do not know what VR represents at all.
 
 For the qtwidget you'll need another 5 files
 the new ones:
@@ -83,18 +83,20 @@ Doing steroscopics with LUA is possible as well, but we need to be near to hardw
 for shutters hmd and whatever comes up in the future.
 I'll contribute more on this issue, but I don't own a hmd yet, I'm waiting
 for "quadbuffering", and I need a period of time to be in the code again,
-there are several things to do, and I've other ideas which
+there are several things to do, and I've some other ideas which we could implement.
 
 So there are many of you like me who want celestia to be continued, let's say celestia
-took a well-earned rest ;-).
+took a well-earned rest ;-). The forum has been reborn, so there are only milestones on the
+way.
 At least good software is never "ready" or perfect, and I am pretty sure, we will
 continue this brilliant project. Of course!
-
 
 Essentially my modifications will work on any platform, maybe there are issues which I can't expect 
 without testing.
 e.g. there were issues with Mac and F2/F3 Keys in 2009. Now there's a qt-widget
+
 ##-------------
+
 Build and use (Linux):
 For testing purposes you even don't need a final "make install", you
 may run the binary out of your local clone path, and solve the -z's issue,
