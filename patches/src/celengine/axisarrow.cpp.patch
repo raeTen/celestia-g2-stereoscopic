@@ -1,0 +1,48 @@
+--- src/celengine/axisarrow.cpp	2016-10-11 12:54:43.000000000 +0200
++++ src/celengine/axisarrow.cpp.stereo	2016-10-11 15:15:53.000000000 +0200
+@@ -1,6 +1,6 @@
+ // axisarrow.cpp
+ //
+-// Copyright (C) 2007-2009, Celestia Development Team
++// Copyright (C) 2007-2015, Celestia Development Team
+ // Original version by Chris Laurel <claurel@gmail.com>
+ //
+ // This program is free software; you can redistribute it and/or
+@@ -201,8 +201,8 @@
+     float shaftRadius = 0.010f;
+     float headRadius = 0.025f;
+     unsigned int nSections = 30;
+-	
+-    glColor4f(color.red(), color.green(), color.blue(), opacity);
++
++    glColor4f(0.93f, 0.77f, 0.27f, opacity);
+     RenderArrow(shaftLength, headLength, shaftRadius, headRadius, nSections);
+ 
+     glPopMatrix();
+@@ -310,7 +310,7 @@
+     // x-axis
+     glPushMatrix();
+     glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+-    glColor4f(1.0f, 0.0f, 0.0f, opacity);
++    glColor4f(0.7f, 0.5f, 0.5f, opacity);
+     RenderArrow(shaftLength, headLength, shaftRadius, headRadius, nSections);
+     glTranslatef(0.1f, 0.0f, 0.75f);
+     glScalef(labelScale, labelScale, labelScale);
+@@ -320,7 +320,7 @@
+     // y-axis
+     glPushMatrix();
+     glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+-    glColor4f(0.0f, 1.0f, 0.0f, opacity);
++    glColor4f(0.5f, 0.7f, 0.5f, opacity);
+     RenderArrow(shaftLength, headLength, shaftRadius, headRadius, nSections);
+     glTranslatef(0.1f, 0.0f, 0.75f);
+     glScalef(labelScale, labelScale, labelScale);
+@@ -330,7 +330,7 @@
+     // z-axis
+     glPushMatrix();
+     glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+-    glColor4f(0.0f, 0.0f, 1.0f, opacity);
++    glColor4f(0.5f, 0.5f, 0.7f, opacity);
+     RenderArrow(shaftLength, headLength, shaftRadius, headRadius, nSections);
+     glTranslatef(0.1f, 0.0f, 0.75f);
+     glScalef(labelScale, labelScale, labelScale);

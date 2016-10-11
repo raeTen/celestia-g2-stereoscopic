@@ -1,0 +1,53 @@
+--- src/celestia/qt/qtappwin.h	2016-10-11 12:54:43.000000000 +0200
++++ src/celestia/qt/qtappwin.h.stereo	2016-10-11 17:23:44.000000000 +0200
+@@ -1,6 +1,6 @@
+ // qtappwin.h
+ //
+-// Copyright (C) 2007-2008, Celestia Development Team
++// Copyright (C) 2007-2015, Celestia Development Team
+ // celestia-developers@lists.sourceforge.net
+ //
+ // Main window for Celestia Qt front-end.
+@@ -24,6 +24,7 @@
+ class CelestialBrowser;
+ class InfoPanel;
+ class EventFinder;
++class StereoSettings;
+ class CelestiaActions;
+ 
+ 
+@@ -68,7 +69,6 @@
+     void selectSun();
+ 
+     void slotPreferences();
+-
+     void slotSplitViewVertically();
+     void slotSplitViewHorizontally();
+     void slotCycleView();	
+@@ -95,7 +95,7 @@
+     void slotBookmarkTriggered(const QString& url);
+ 
+     void handleCelUrl(const QUrl& url);
+-    
++
+  signals:
+     void progressUpdate(const QString& s, int align, const QColor& c);
+ 
+@@ -113,7 +113,6 @@
+     CelestiaGlWidget* glWidget;
+     QDockWidget* toolsDock;
+     CelestialBrowser* celestialBrowser;
+-
+     CelestiaCore* m_appCore;
+     
+     CelestiaActions* actions;
+@@ -128,7 +127,8 @@
+ 
+     InfoPanel* infoPanel;
+     EventFinder* eventFinder;
+-
++    StereoSettings* stereoSettings;
++    
+     CelestiaCore::Alerter* alerter;
+     
+     PreferencesDialog* m_preferencesDialog;

@@ -1,0 +1,115 @@
+--- src/celestia/qt/qtappwin.cpp	2016-10-11 12:54:43.000000000 +0200
++++ src/celestia/qt/qtappwin.cpp.stereo	2016-10-11 14:35:30.000000000 +0200
+@@ -1,7 +1,7 @@
+ // qtappwin.cpp
+ //
+-// Copyright (C) 2007-2008, Celestia Development Team
+-// celestia-developers@lists.sourceforge.net
++// Copyright (C) 2007-2015, Celestia Development Team
++
+ //
+ // Main window for Celestia Qt front-end.
+ //
+@@ -44,6 +44,8 @@
+ #include "qtappwin.h"
+ #include "qtglwidget.h"
+ #include "qtpreferencesdialog.h"
++
++
+ #include "qtsolarsystembrowser.h"
+ #include "qtcelestialbrowser.h"
+ #include "qtdeepskybrowser.h"
+@@ -52,7 +54,11 @@
+ #include "qtcelestiaactions.h"
+ #include "qtinfopanel.h"
+ #include "qteventfinder.h"
++
++#include "qtstereosettings.h"
++
+ #include "qtsettimedialog.h"
++
+ //#include "qtvideocapturedialog.h"
+ #include "celestia/scriptmenu.h"
+ #include "celestia/url.h"
+@@ -149,6 +155,7 @@
+     helpMenu(NULL),
+     infoPanel(NULL),
+     eventFinder(NULL),
++    stereoSettings(NULL),
+     alerter(NULL),
+     m_preferencesDialog(NULL),
+     m_bookmarkManager(NULL),
+@@ -324,6 +331,13 @@
+     eventFinder->setVisible(false);
+     //addDockWidget(Qt::DockWidgetArea, eventFinder);
+ 
++    stereoSettings = new StereoSettings(m_appCore, _("Stereo Settings"), this);
++    stereoSettings->setObjectName("stereo-settings-panel");
++    stereoSettings->setAllowedAreas(Qt::LeftDockWidgetArea |
++                                    Qt::RightDockWidgetArea);
++    addDockWidget(Qt::RightDockWidgetArea, stereoSettings);
++    stereoSettings->setVisible(false);
++    
+     // Create the time toolbar
+     TimeToolBar* timeToolBar = new TimeToolBar(m_appCore, _("Time"));
+     timeToolBar->setObjectName("time-toolbar");
+@@ -380,6 +394,7 @@
+     viewMenu->addAction(toolsDock->toggleViewAction());
+     viewMenu->addAction(infoPanel->toggleViewAction());
+     viewMenu->addAction(eventFinder->toggleViewAction());
++    viewMenu->addAction(stereoSettings->toggleViewAction());
+     viewMenu->addSeparator();
+     
+     QAction* fullScreenAction = new QAction(_("Full screen"), this);
+@@ -634,7 +649,7 @@
+     {
+         QFileInfo saveAsFile(saveAsName);
+ 
+-        //glWidget->repaint();
++        //glWidget->repaint(); 
+         QImage grabbedImage = glWidget->grabFrameBuffer();
+         grabbedImage.save(saveAsName);
+ 
+@@ -819,7 +834,19 @@
+     m_preferencesDialog->show();
+ #endif
+ }
++/*
++void CelestiaAppWindow::slotStereoscopic()
++{
++    StereoscopicDialog sdlg(this,m_appCore);
++    //sdlg.exec();
++    
++    sdlg.setWindowModality(Qt::NonModal);
++    sdlg.exec();
++    sdlg.hide();
++    //sdlg.activateWindow();
+ 
++}
++*/
+ void CelestiaAppWindow::slotSplitViewVertically()
+ {
+     m_appCore->charEntered('\025');
+@@ -1148,6 +1175,13 @@
+     connect(prefAct, SIGNAL(triggered()), this, SLOT(slotPreferences()));
+     fileMenu->addAction(prefAct);
+ 
++    /*
++    stereo dialog to tinker around, could be part of preferences too
++    QAction* stereoAct = new QAction(QIcon(":data/celestia.png"),
++                                   _("&Stereoscopic Settings..."), this);
++    connect(stereoAct, SIGNAL(triggered()), this, SLOT(slotStereoscopic()));
++    fileMenu->addAction(stereoAct);
++    */
+     QAction* quitAct = new QAction(QIcon(":data/exit.png"), _("E&xit"), this);
+     quitAct->setShortcut(QString(_("Ctrl+Q")));
+     connect(quitAct, SIGNAL(triggered()), this, SLOT(close()));
+@@ -1395,7 +1429,7 @@
+ 
+ void CelestiaAppWindow::loadingProgressUpdate(const QString& s)
+ {
+-    emit progressUpdate(s, Qt::AlignLeft, Qt::white);
++    emit progressUpdate(s, Qt::AlignJustify|Qt::AlignBottom, QColor(220, 155, 15));
+ }
+ 
+ 

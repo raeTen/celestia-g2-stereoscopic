@@ -1,0 +1,74 @@
+--- src/celestia/qt/qtmain.cpp	2016-10-11 12:54:43.000000000 +0200
++++ src/celestia/qt/qtmain.cpp.stereo	2016-10-11 14:39:12.000000000 +0200
+@@ -20,15 +20,17 @@
+ #include <QDesktopServices>
+ #include <QPixmap>
+ #include <QBitmap>
++#include <QPainter>
+ #include <vector>
+ #include "qtappwin.h"
+-#include <qtextcodec.h> 
++#include <qtextcodec.h>
+ 
+ using namespace std;
+ 
+-
+-static const char *description = "Celestia";
+-
++//static const char *description = "Celestia"; //"compiler says unsed"
++static const char *cel_qt_version = "Celestia-g2-{stereo}"; //splashscreen value
++//NOTE Before really dropping gtk win32 kde... import dev names ...
++//Let's flag these just as "unsupported" while there are no interested developers/maintainers for these UIs
+ // Command line options
+ static bool startFullscreen = false;
+ static bool runOnce = false;
+@@ -44,31 +46,37 @@
+ 
+ 
+ int main(int argc, char *argv[])
+-{  
++{
+     QApplication app(argc, argv);
+ 
+     Q_INIT_RESOURCE(icons);
+ 
+     QCoreApplication::setOrganizationName("Celestia Development Team");
+-    QCoreApplication::setApplicationName("Celestia");
++    QCoreApplication::setApplicationName("Celestia-g2");
+ 
+     ParseCommandLine();
+-
+-    QPixmap pixmap("splash.png");
++    /*
++    Disabled for now until issues with pixmap alpha channel
++    are resolved
++    splash.show();*/
++    QPixmap pixmap("splash-g2.png");
++    /*showMessage allows only one message, so paint version string before by Qpainter*/
++    QPainter* painter=new QPainter(&pixmap);
++    painter->setPen(QColor(220, 155, 15));
++    painter->drawText(490,424,cel_qt_version);
++    painter->end();
+     QSplashScreen splash(pixmap);
+-    splash.setMask(pixmap.mask());
+ 
+-    // Disabled for now until issues with pixmap alpha channel
+-    // are resolved
+-    //splash.show();
++    splash.setMask(pixmap.mask());
++    splash.show();
+ 
+     // Gettext integration
+-    setlocale(LC_ALL, ""); 
+-    setlocale(LC_NUMERIC, "C"); 
++    setlocale(LC_ALL, "");
++    setlocale(LC_NUMERIC, "C");
+     bindtextdomain("celestia","locale");
+-    bind_textdomain_codeset("celestia", "UTF-8"); 
++    bind_textdomain_codeset("celestia", "UTF-8");
+     bindtextdomain("celestia_constellations","locale");
+-    bind_textdomain_codeset("celestia_constellations", "UTF-8"); 
++    bind_textdomain_codeset("celestia_constellations", "UTF-8");
+     textdomain("celestia");
+ 
+     // By default, QString converts the const char * data into Unicode Latin-1 characters.

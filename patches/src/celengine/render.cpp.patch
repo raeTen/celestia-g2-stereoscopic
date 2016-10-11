@@ -1,0 +1,94 @@
+--- src/celengine/render.cpp	2016-10-11 12:54:43.000000000 +0200
++++ src/celengine/render.cpp.stereo	2016-10-11 15:16:21.000000000 +0200
+@@ -1,6 +1,6 @@
+ // render.cpp
+ //
+-// Copyright (C) 2001-2009, the Celestia Development Team
++// Copyright (C) 2001-2015, the Celestia Development Team
+ // Original version by Chris Laurel <claurel@gmail.com>
+ //
+ // This program is free software; you can redistribute it and/or
+@@ -220,7 +220,7 @@
+ Color Renderer::EclipticGridLabelColor  (0.72f,  0.64f,  0.88f);
+ Color Renderer::HorizonGridLabelColor   (0.72f,  0.72f,  0.72f);
+ 
+-
++/*
+ Color Renderer::StarOrbitColor          (0.5f,   0.5f,   0.8f);
+ Color Renderer::PlanetOrbitColor        (0.3f,   0.323f, 0.833f);
+ Color Renderer::DwarfPlanetOrbitColor   (0.3f,   0.323f, 0.833f);
+@@ -230,6 +230,20 @@
+ Color Renderer::CometOrbitColor         (0.639f, 0.487f, 0.168f);
+ Color Renderer::SpacecraftOrbitColor    (0.4f,   0.4f,   0.4f);
+ Color Renderer::SelectionOrbitColor     (1.0f,   0.0f,   0.0f);
++*/
++/* new colors for orbit lines, more modern, and anaglyph compatible
++sorted by saturation from bright to dark, palette created from splash-screen gradient*/
++Color Renderer::SelectionOrbitColor     (0.99f,   0.93f, 0.83f);
++
++Color Renderer::PlanetOrbitColor        (0.7f,   0.64f, 0.55f);
++Color Renderer::DwarfPlanetOrbitColor   (0.63f,   0.57f, 0.48f);
++Color Renderer::MoonOrbitColor          (0.56f,   0.51f, 0.42f);
++Color Renderer::MinorMoonOrbitColor     (0.54f,   0.49f, 0.4f);
++Color Renderer::AsteroidOrbitColor      (0.51f,   0.45f, 0.36f);
++Color Renderer::CometOrbitColor         (0.49f,   0.44f, 0.35f);
++Color Renderer::SpacecraftOrbitColor    (0.46f,   0.41f, 0.33f);
++Color Renderer::StarOrbitColor          (0.44f,   0.41f,   0.33f);
++
+ 
+ Color Renderer::ConstellationColor      (0.0f,   0.24f,  0.36f);
+ Color Renderer::BoundaryColor           (0.24f,  0.10f,  0.12f);
+@@ -241,7 +255,7 @@
+ Color Renderer::HorizonGridColor        (0.38f,  0.38f,  0.38f);
+ Color Renderer::EclipticColor           (0.5f,   0.1f,   0.1f);
+ 
+-Color Renderer::SelectionCursorColor    (1.0f,   0.0f,   0.0f);
++Color Renderer::SelectionCursorColor    (0.76f,   0.7f,   0.61f);
+ 
+ 
+ #ifdef ENABLE_SELF_SHADOW
+@@ -2832,7 +2846,7 @@
+     Vector3f observerPosLY = observer.getPosition().offsetFromLy(Vector3f::Zero());
+     glPushMatrix();
+     glRotate(m_cameraOrientation);
+-
++    
+     // Get the model matrix *before* translation.  We'll use this for
+     // positioning star and planet labels.
+     glGetDoublev(GL_MODELVIEW_MATRIX, modelMatrix);
+@@ -3209,7 +3223,7 @@
+ 
+         if (useNewStarRendering)
+             renderPointStars(*universe.getStarCatalog(), faintestMag, observer);
+-        else
++        else // deprecated?
+             renderStars(*universe.getStarCatalog(), faintestMag, observer);
+ 
+         if (toggleAA)
+@@ -3313,8 +3327,7 @@
+         
+         // Render background markers; rendering of other markers is deferred until
+         // solar system objects are rendered.
+-        renderBackgroundAnnotations(FontNormal);
+-    }    
++    }
+ 
+     // Draw the selection cursor
+     bool selectionVisible = false;
+@@ -3677,7 +3690,7 @@
+ #if DEBUG_COALESCE
+         clog << "nEntries: " << nEntries << ",   zNearest: " << zNearest << ",   prevNear: " << prevNear << "\n";
+ #endif
+-
++        ///printf ("nEntries:%i zNearest:%f  prevNear:%f \n ",nEntries,zNearest,prevNear);
+         // If the nearest distance wasn't set, nothing should appear
+         // in the frontmost depth buffer interval (so we can set the near plane
+         // of the front interval to whatever we want as long as it's less than
+@@ -3753,7 +3766,6 @@
+                            nearPlaneDistance,
+                            farPlaneDistance);
+             glMatrixMode(GL_MODELVIEW);
+-
+             Frustum intervalFrustum(degToRad(fov),
+                                     (float) windowWidth / (float) windowHeight,
+                                     -depthPartitions[interval].nearZ,

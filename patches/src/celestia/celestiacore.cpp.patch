@@ -1,0 +1,1218 @@
+--- src/celestia/celestiacore.cpp	2016-10-11 12:54:44.000000000 +0200
++++ src/celestia/celestiacore.cpp.stereo	2016-10-11 16:12:10.000000000 +0200
+@@ -6,7 +6,7 @@
+ // keyboard events.  CelestiaCore then turns those events into calls
+ // to Renderer and Simulation.
+ //
+-// Copyright (C) 2001-2009, the Celestia Development Team
++// Copyright (C) 2001-2009, 2015 the Celestia Development Team
+ //
+ // This program is free software; you can redistribute it and/or
+ // modify it under the terms of the GNU General Public License
+@@ -81,13 +81,99 @@
+ 
+ static const int ConsolePageRows = 10;
+ static Console console(200, 120);
+-
++///used for stereoscopic modes
++static const double CelMaxSpeed=20.0e12;
++//we still could accelerate to more velocity at all, but this represents 100% of velocity
++//for stereoscopic values calulation.
++//TODO have these encapsulated but where, renderclass?
++uint TravelledTime = 0; // made global, avoiding redundant cpu-cycles - percent of travel time
++double isTravelTime = 0;
++double speed = 0.0f; // made global, avoiding redundant cpu-cycles
++
++//TODO
++float CelFrontPlaneDepthv = 0.0f;
++/* represents front plane virtual depth */
+ 
+ static void warning(string s)
+ {
+     cout << s;
+ }
++///++++++++++++++++++++++++++++++++++++++++++++++++++++
++Stereo::Stereo(
++                int smode) :
++    mode(smode)
+ 
++{
++    init();
++}
++void Stereo::init() //TODO different initial values for each mode
++{
++    uiVals[Stereo::depth] = 42;
++    uiVals[Stereo::frontplane] = 0;
++    uiVals[Stereo::backplaneRelief] = 8;
++    uiVals[Stereo::foobar] = 0;
++    uiFlags[Stereo::inverted] = 0;
++    uiFlags[Stereo::simplesettings] = 0;
++    uiFlags[Stereo::uirighteye] = 0;
++    rightEye=false;
++    allinverted = 1;
++    uiVisible = false;
++}
++void Stereo::setStereoVal(int q_index,
++                         int q_value)
++{
++    uiVals[q_index] = q_value;
++}
++int Stereo::getStereoVal(int q_index)
++{
++    return uiVals[q_index];
++}
++void Stereo::setStereoFlag(int q_index,bool q_checked)
++{
++    uiFlags[q_index] = q_checked;
++    changed = true;
++}
++
++int Stereo::getMode()
++{
++    return mode;
++}
++void Stereo::setMode()
++{
++    mode+=1;
++    changed = true;
++}
++void Stereo::setMode(int smode)
++{
++    if (smode > Stereo::OFF)
++        smode=Stereo::OFF;
++    mode = smode;
++    changed = true;
++}
++///++++++++++++++++++++++++++++++++++++++++++++++++++++
++void Stereo::printVals()
++{
++    cout\
++    << "Mode:"\
++    << " mode"\
++    << " depth:"\
++    << uiVals[Stereo::depth]\
++    << " frontplane:"\
++    << uiVals[Stereo::frontplane]\
++    << " backplaneRelief:"\
++    << uiVals[Stereo::backplaneRelief]\
++    << " foobar:"\
++    << uiVals[Stereo::foobar]\
++    << " Mode:"\
++    << mode\
++    << " uiVisible:"\
++    << uiVisible\
++    << "\n";
++}
++Stereo::~Stereo()
++{
++}
++///########################################################
+ 
+ struct OverlayImage
+ {
+@@ -291,8 +377,9 @@
+     return true;
+ }
+ 
+-
++    
+ CelestiaCore::CelestiaCore() :
++    stereo(NULL),
+     config(NULL),
+     universe(NULL),
+     favorites(NULL),
+@@ -328,6 +415,7 @@
+     timer(NULL),
+     runningScript(NULL),
+     execEnv(NULL),
++    
+ #ifdef CELX
+     celxScript(NULL),
+     luaHook(NULL),
+@@ -369,6 +457,7 @@
+        underlying engine even before rendering is enabled. It's initRenderer()
+        routine will be called much later. */
+     renderer = new Renderer();
++    
+     timer = CreateTimer();
+ 
+     execEnv = new CoreExecutionEnvironment(*this);
+@@ -389,6 +478,7 @@
+ 
+ CelestiaCore::~CelestiaCore()
+ {
++   
+     if (movieCapture != NULL)
+         recordEnd();
+ 
+@@ -782,9 +872,9 @@
+             }
+         }
+         else if (button == MiddleButton)
+-	    {
++        {
+             if ((*activeView)->zoom != 1)
+-	        {
++            {
+                 (*activeView)->alternateZoom = (*activeView)->zoom;
+                 (*activeView)->zoom = 1;
+             }
+@@ -796,8 +886,8 @@
+ 
+             // If AutoMag, adapt the faintestMag to the new fov
+             if((renderer->getRenderFlags() & Renderer::ShowAutoMag) != 0)
+-	        setFaintestAutoMag();
+-	    }
++            setFaintestAutoMag();
++        }
+     }
+ }
+ 
+@@ -897,7 +987,7 @@
+     }
+ 
+ #ifdef CELX
+-	if (luaHook &&
++    if (luaHook &&
+             luaHook->callLuaHook(this,"mousebuttonmove", dx, dy, modifiers))
+         {
+             return;
+@@ -979,13 +1069,13 @@
+                 setZoomFromFOV();
+             }
+ 
+-    	    if ((renderer->getRenderFlags() & Renderer::ShowAutoMag))
+-	        {
+-	            setFaintestAutoMag();
+-    		    char buf[128];
+-        		sprintf(buf, _("Magnitude limit: %.2f"), sim->getFaintestVisible());
+-        		flash(buf);
+-	        }
++            if ((renderer->getRenderFlags() & Renderer::ShowAutoMag))
++            {
++                setFaintestAutoMag();
++                char buf[128];
++                sprintf(buf, _("Magnitude limit: %.2f"), sim->getFaintestVisible());
++                flash(buf);
++            }
+         }
+         else
+         {
+@@ -999,7 +1089,9 @@
+             {
+                 // If right dragging to rotate, adjust the rotation rate
+                 // based on the distance from the reference object.
+-                coarseness = ComputeRotationCoarseness(*sim);
++                //coarseness = ComputeRotationCoarseness(*sim);
++                ///modify the coarseness for shift+cursorkeys only, not for mouse
++                coarseness = 1.5f;
+             }
+ 
+             Quaternionf q = XRotation(dy / height * coarseness) * YRotation(dx / width * coarseness);
+@@ -1097,7 +1189,9 @@
+ 
+ void CelestiaCore::keyDown(int key, int modifiers)
+ {
++    char buf[64];
+     setViewChanged();
++   
+ 
+ #ifdef CELX
+     // TODO: should pass modifiers as a Lua table
+@@ -1108,76 +1202,162 @@
+         return;
+     }
+ #endif
+-    switch (key)
+-    {
+-    case Key_F1:
+-        sim->setTargetSpeed(0);
+-        break;
+-    case Key_F2:
+-        sim->setTargetSpeed(1.0f);
+-        break;
+-    case Key_F3:
+-        sim->setTargetSpeed(1000.0f);
+-        break;
+-    case Key_F4:
+-        sim->setTargetSpeed((float) astro::speedOfLight);
+-        break;
+-    case Key_F5:
+-        sim->setTargetSpeed((float) astro::speedOfLight * 10.0f);
+-        break;
+-    case Key_F6:
+-        sim->setTargetSpeed(astro::AUtoKilometers(1.0f));
+-        break;
+-    case Key_F7:
+-        sim->setTargetSpeed(astro::lightYearsToKilometers(1.0f));
+-        break;
+-    case Key_F11:
+-        if (movieCapture != NULL)
+-        {
+-            if (isRecording())
+-                recordPause();
++
++    /* suggesting SHIFT F-Keys for using inbuild stereo rendering
++    afaik there were issues with macs and shift so F2 or F3 to toggle */
++    if (modifiers)
++    {
++        switch (key)
++        {
++            case Key_F2:
++                stereo->setMode();
++                //stereo->printVals();
++                break;
++            case Key_F3:
++                //stereo->mode+=1;
++                stereo->setMode();
++                /*if ( stereo->mode > 4 ) // || stereo->mode < 0  )
++                {
++                    stereo->mode=0;
++                    glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_FALSE);
++                    singleView();
++                }
++                */
++            if (stereo->mode)
++            {
++                sprintf(buf, _("Stereoscopic Mode: %i  (SHIFT F5/F6 for Depth Level)"),stereo->mode);
++                flash(buf, 2.0);
++                break;
++            }
+             else
+-                recordBegin();
++            {
++                flash(_("Stereoscopic Mode OFF"));
++            }
++            case Key_F4:
++                if (stereo->mode)
++                {
++                    sprintf(buf, _("F4 Stereoscopic Depth Level: %i %i "),stereo->uiVals[Stereo::depth],stereo->uiVals[Stereo::frontplane]);
++                    flash(buf, 10.0);
++                }
++                break;
++            case Key_F5:
++                if (stereo->mode)
++                {
++                    stereo->uiVals[Stereo::depth] -= 1;
++                    if (stereo->uiVals[Stereo::frontplane] <= -stereo->maxDepth)
++                        stereo->uiVals[Stereo::frontplane] = -stereo->maxDepth;
++                    stereo->fdepth = stereo->uiVals[Stereo::depth] * stereo->DepthFactor;
++                    stereo->uiVals[Stereo::frontplane] = \
++                                    stereo->uiVals[Stereo::depth]/2 - stereo->uiVals[Stereo::backplaneRelief];
++                    CelFrontPlaneDepthv = stereo->uiVals[Stereo::frontplane] * stereo->DepthFactor;
++                    //sprintf(buf, _("F4 Stereoscopic Depth Level: %i %i"),stereo->uiVals[Stereo::depth],stereo->uiVals[Stereo::frontplane]);
++                    sprintf(buf, _("Stereoscopic Depth Level: %i"),stereo->uiVals[Stereo::depth]);
++                    flash(buf, 10.0);
++                }
++                break;
++            case Key_F6:
++                if (stereo->mode)
++                {
++                    stereo->uiVals[Stereo::depth] += 1;
++                    if (stereo->uiVals[Stereo::frontplane] >= stereo->maxDepth)
++                        stereo->uiVals[Stereo::frontplane] = stereo->maxDepth;
++
++                    stereo->fdepth = stereo->uiVals[Stereo::depth] * stereo->DepthFactor;
++                    stereo->uiVals[Stereo::frontplane] = \
++                                    stereo->uiVals[Stereo::depth]/2 - stereo->uiVals[Stereo::backplaneRelief];
++                    CelFrontPlaneDepthv = stereo->uiVals[Stereo::frontplane] * stereo->DepthFactor;
++                    //sprintf(buf, _("F4 Stereoscopic Depth Level: %i %i"),stereo->uiVals[Stereo::depth],stereo->uiVals[Stereo::frontplane]);
++                    sprintf(buf, _("Stereoscopic Depth Level: %i"),stereo->uiVals[Stereo::depth]);
++                    flash(buf, 10.0);
++                }
++                break;
++            case Key_F7:
++                if (stereo->mode)
++                {
++                    if ( stereo->allinverted == 1 )
++                        stereo->allinverted=-1;
++                    else
++                        stereo->allinverted=1;
++                    sprintf(buf, _("Backplane switched: %i"),stereo->allinverted);
++                    flash(buf, 2.0);
++                }
++                break;
+         }
+-        break;
+-    case Key_F12:
+-        if (movieCapture != NULL)
+-            recordEnd();
+-        break;
+-    case Key_NumPad2:
+-    case Key_NumPad4:
+-    case Key_NumPad6:
+-    case Key_NumPad7:
+-    case Key_NumPad8:
+-    case Key_NumPad9:
+-        sim->setTargetSpeed(sim->getTargetSpeed());
+-        break;
++    }
++    else //no modifiers
++    {
++    switch (key)
++    {   /* */
++        case Key_F1:
++            sim->setTargetSpeed(0);
++            break;
++        case Key_F2:
++            sim->setTargetSpeed(1.0f);
++            break;
++        case Key_F3:
++            sim->setTargetSpeed(1000.0f);
++            break;
++        case Key_F4:
++            sim->setTargetSpeed((float) astro::speedOfLight);
++            break;
++        case Key_F5:
++            sim->setTargetSpeed((float) astro::speedOfLight * 10.0f);
++            break;
++        case Key_F6:
++            sim->setTargetSpeed(astro::AUtoKilometers(1.0f));
++            break;
++        /* */ 
++        case Key_F7:
++            sim->setTargetSpeed(astro::lightYearsToKilometers(2.0f));
++            break;
+ 
+-    case Key_Down:
+-        if (showConsole)
+-            scrollConsole(console, 1);
+-        break;
++        case Key_F11:
++            if (movieCapture != NULL)
++            {
++                if (isRecording())
++                    recordPause();
++                else
++                    recordBegin();
++            }
++            break;
++        case Key_F12:
++            if (movieCapture != NULL)
++                recordEnd();
++            break;
++        case Key_NumPad2:
++        case Key_NumPad4:
++        case Key_NumPad6:
++        case Key_NumPad7:
++        case Key_NumPad8:
++        case Key_NumPad9:
++            sim->setTargetSpeed(sim->getTargetSpeed());
++            break;
+ 
+-    case Key_Up:
+-        if (showConsole)
+-            scrollConsole(console, -1);
+-        break;
++        case Key_Down:
++            if (showConsole)
++                scrollConsole(console, 1);
++            break;
+ 
+-    case Key_PageDown:
+-        if (showConsole)
+-            scrollConsole(console, ConsolePageRows);
+-        else
+-            back();
+-        break;
++        case Key_Up:
++            if (showConsole)
++                scrollConsole(console, -1);
++            break;
+ 
+-    case Key_PageUp:
+-        if (showConsole)
+-            scrollConsole(console, -ConsolePageRows);
+-        else
+-            forward();
+-        break;
+-    }
++        case Key_PageDown:
++            if (showConsole)
++                scrollConsole(console, ConsolePageRows);
++            else
++                back();
++            break;
+ 
++        case Key_PageUp:
++            if (showConsole)
++                scrollConsole(console, -ConsolePageRows);
++            else
++                forward();
++            break;
++        }
++    }
+     if (KeyAccel < fMaxKeyAccel)
+         KeyAccel *= 1.1;
+ 
+@@ -1243,13 +1423,13 @@
+ 
+ void CelestiaCore::charEntered(const char *c_p, int modifiers)
+ {
++
+     setViewChanged();
+ 
+     Observer* observer = sim->getActiveObserver();
+ 
+     char c = *c_p;
+ 
+-
+ #ifdef CELX
+     if (celxScript != NULL && (textEnterMode & KbPassToScript))
+     {
+@@ -1387,6 +1567,7 @@
+ #endif
+ 
+     char C = toupper(c);
++
+     switch (C)
+     {
+     case '\001': // Ctrl+A
+@@ -1416,9 +1597,9 @@
+     case '\013': // Ctrl+K
+         renderer->setRenderFlags(renderer->getRenderFlags() ^ Renderer::ShowMarkers);
+         if (renderer->getRenderFlags() & Renderer::ShowMarkers)
+-	{
++        {
+             flash(_("Markers enabled"));
+-	}
++        }
+         else
+             flash(_("Markers disabled"));
+         notifyWatchers(RenderFlagsChanged);
+@@ -1518,9 +1699,9 @@
+     case '\024':  // Ctrl+T
+         renderer->setRenderFlags(renderer->getRenderFlags() ^ Renderer::ShowCometTails);
+         if (renderer->getRenderFlags() & Renderer::ShowCometTails)
+-	{
++        {
+             flash(_("Comet tails enabled"));
+-	}
++        }
+         else
+             flash(_("Comet tails disabled"));
+         notifyWatchers(RenderFlagsChanged);
+@@ -1712,7 +1893,7 @@
+ 
+     case '*':
+         addToHistory();
+-	sim->reverseObserverOrientation();
++        sim->reverseObserverOrientation();
+         break;
+ 
+     case '?':
+@@ -1774,37 +1955,37 @@
+     case ',':
+         addToHistory();
+         if (observer->getFOV() > MinimumFOV)
+-	{
+-	    observer->setFOV(observer->getFOV() / 1.05f);
++        {
++            observer->setFOV(observer->getFOV() / 1.05f);
+             setZoomFromFOV();
+-	    if((renderer->getRenderFlags() & Renderer::ShowAutoMag))
+-	    {
+-	        setFaintestAutoMag();
+-		char buf[128];
++            if((renderer->getRenderFlags() & Renderer::ShowAutoMag))
++            {
++                setFaintestAutoMag();
++                char buf[128];
+                 setlocale(LC_NUMERIC, "");
+-		sprintf(buf, _("Magnitude limit: %.2f"), sim->getFaintestVisible());
++                sprintf(buf, _("Magnitude limit: %.2f"), sim->getFaintestVisible());
+                 setlocale(LC_NUMERIC, "C");
+-		flash(buf);
+-	    }
+-	}
++                flash(buf);
++            }
++        }
+         break;
+ 
+     case '.':
+         addToHistory();
+         if (observer->getFOV() < MaximumFOV)
+-	{
+-	    observer->setFOV(observer->getFOV() * 1.05f);
++        {
++            observer->setFOV(observer->getFOV() * 1.05f);
+             setZoomFromFOV();
+-	    if((renderer->getRenderFlags() & Renderer::ShowAutoMag) != 0)
+-	    {
+-	        setFaintestAutoMag();
+-		char buf[128];
++            if((renderer->getRenderFlags() & Renderer::ShowAutoMag) != 0)
++            {
++                setFaintestAutoMag();
++                char buf[128];
+                 setlocale(LC_NUMERIC, "");
+-		sprintf(buf, _("Magnitude limit: %.2f"), sim->getFaintestVisible());
++                sprintf(buf, _("Magnitude limit: %.2f"), sim->getFaintestVisible());
+                 setlocale(LC_NUMERIC, "C");
+-		flash(buf);
+-	    }
+-	}
++                flash(buf);
++            }
++        }
+         break;
+ 
+     case '+':
+@@ -1874,13 +2055,13 @@
+            runScript(config->demoScriptFile);
+         break;
+ 
+-	case 'E':
+-		if (c == 'e')
+-			renderer->setLabelMode(renderer->getLabelMode() ^ Renderer::GalaxyLabels);
+-		else
+-        	renderer->setLabelMode(renderer->getLabelMode() ^ Renderer::GlobularLabels);		
++    case 'E':
++        if (c == 'e')
++            renderer->setLabelMode(renderer->getLabelMode() ^ Renderer::GalaxyLabels);
++        else
++            renderer->setLabelMode(renderer->getLabelMode() ^ Renderer::GlobularLabels);
+         notifyWatchers(LabelFlagsChanged);
+-		break;
++        break;
+ 
+     case 'F':
+         addToHistory();
+@@ -1892,7 +2073,11 @@
+         addToHistory();
+         if (sim->getFrame()->getCoordinateSystem() == ObserverFrame::Universal)
+             sim->follow();
+-        sim->gotoSelection(5.0, Vector3f::UnitY(), ObserverFrame::ObserverLocal);
++        if (c == 'g')
++            sim->gotoSelection(5.0, Vector3f::UnitY(), ObserverFrame::ObserverLocal);
++        else
++            //shift +G(oto) with longer travel time to enjoy stereothings 
++            sim->gotoSelection(17.0, Vector3f::UnitY(), ObserverFrame::ObserverLocal);
+         break;
+ 
+     case 'H':
+@@ -1959,7 +2144,7 @@
+         notifyWatchers(LabelFlagsChanged);
+         break;
+ 
+-    case 'O':
++    case 'O': //FIXME
+         renderer->setRenderFlags(renderer->getRenderFlags() ^ Renderer::ShowOrbits);
+         notifyWatchers(RenderFlagsChanged);
+         break;
+@@ -1988,11 +2173,11 @@
+             sim->setTrackedObject(Selection());
+         break;
+ 
+-	case 'U':
+-		if (c == 'u')
+-			renderer->setRenderFlags(renderer->getRenderFlags() ^ Renderer::ShowGalaxies);
+-		else
+-			renderer->setRenderFlags(renderer->getRenderFlags() ^ Renderer::ShowGlobulars);
++    case 'U':
++        if (c == 'u')
++            renderer->setRenderFlags(renderer->getRenderFlags() ^ Renderer::ShowGalaxies);
++        else
++            renderer->setRenderFlags(renderer->getRenderFlags() ^ Renderer::ShowGlobulars);
+         notifyWatchers(RenderFlagsChanged);
+         break;
+ 
+@@ -2067,8 +2252,8 @@
+         if((renderer->getRenderFlags() & Renderer::ShowAutoMag) == 0)
+         {
+             if (sim->getFaintestVisible() < 15.0f)
+-	          {
+-	              setFaintest(sim->getFaintestVisible() + 0.2f);
++            {
++                setFaintest(sim->getFaintestVisible() + 0.2f);
+                 notifyWatchers(FaintestChanged);
+                 char buf[128];
+                 setlocale(LC_NUMERIC, "");
+@@ -2152,8 +2337,9 @@
+         break;
+ 
+     case '@':
+-        // TODO: 'Edit mode' should be eliminated; it can be done better
++        // !TODO: 'Edit mode' should be eliminated; it can be done better
+         // with a Lua script.
++        ///I like both, please keep at least for the model & ssc designers
+         editMode = !editMode;
+         break;
+ #ifdef USE_HDR
+@@ -2180,6 +2366,7 @@
+             flash(buf);
+         }
+         break;
++
+ #endif
+     }
+ }
+@@ -2231,8 +2418,11 @@
+ 
+     sysTime = timer->getTime();
+ 
++    stereo = new Stereo(0);
++    
+     if (startURL != "")
+         goToUrl(startURL);
++    
+ }
+ 
+ void CelestiaCore::setStartURL(string url)
+@@ -2283,7 +2473,7 @@
+         else
+             fraction = dt / span;
+ 
+-        // sim->changeOrbitDistance(zoomMotion * (float) fraction);
++        sim->changeOrbitDistance(zoomMotion * (float) fraction);
+         if (currentTime - zoomTime >= span)
+             zoomMotion = 0.0f;
+     }
+@@ -2377,6 +2567,7 @@
+ 
+         av += (dt * KeyRotationAccel) * joystickRotation.cast<double>();
+         sim->setTargetSpeed(sim->getTargetSpeed());
++        speed = sim->getObserver().getVelocity().norm();
+     }
+ 
+     if (keysPressed[Key_NumPad5])
+@@ -2392,12 +2583,14 @@
+             sim->setTargetSpeed(0.1f);
+         else
+             sim->setTargetSpeed(sim->getTargetSpeed() * (float) exp(dt * 3));
++        speed = sim->getObserver().getVelocity().norm();
+     }
+     if (keysPressed[(int)'Z'] || joyButtonsPressed[JoyButton1])
+     {
+         bSetTargetSpeed = true;
+ 
+         sim->setTargetSpeed(sim->getTargetSpeed() / (float) exp(dt * 3));
++        speed = sim->getObserver().getVelocity().norm();
+     }
+     if (!bSetTargetSpeed && av.norm() > 0.0f)
+     {
+@@ -2408,6 +2601,8 @@
+ 
+     if (!refObject.empty())
+     {
++        ///TODO nice2have would be a smooth orbiting, too (like rotating)
++        //we could set target values here and "tick" the sim 
+         Quaternionf q = Quaternionf::Identity();
+         float coarseness = ComputeRotationCoarseness(*sim);
+ 
+@@ -2449,6 +2644,57 @@
+     sim->update(dt);
+ }
+ 
++void CelestiaCore::celDynamicStereoValues()
++{
++/// code for stereoscopics sponsered by neTear (2009+2015)    
++// let virtual stereo frustum front plane behind the monitor while travelling, and
++// let it smoothly come back to "more" front position.
++// at least it's not a 'frustum' - more a culling retangle area (orthographic)
++    if ( isTravelTime )
++    {
++        if ( TravelledTime < 24  &&   isTravelTime > 1 )
++            stereo->fdepth = 0.0f;
++        else
++            stereo->fdepth = ( stereo->uiVals[Stereo::depth] * TravelledTime / 100 ) * stereo->DepthFactor;
++            if (stereo->fdepth > ( stereo->uiVals[Stereo::depth] * stereo->DepthFactor) )
++                stereo->fdepth = stereo->uiVals[Stereo::depth] * stereo->DepthFactor;
++    }
++    else
++    {
++        stereo->fdepth = stereo->uiVals[Stereo::depth] * stereo->DepthFactor;
++    }
++    //TODO
++    //working around the negative z's on back planes for "travel around 'far' distances"
++/*
++    if (speed != 0 )
++    {
++        int speed_p= 100 * speed / CelMaxSpeed;
++        if ( speed_p > 20000000 )
++        {
++            stereo->fdepth = -(stereo->uiVals[Stereo::depth]/2) * stereo->DepthFactor;
++            stereo->uiVals[Stereo::frontplane]v = ( (-stereo->uiVals[Stereo::depth] / 2 - stereo->uiVals[Stereo::backplaneRelief] * stereo->allinverted) + stereo->uiVals[Stereo::frontplane] ) * stereo->DepthFactor;
++        }
++        //printf("Speed: %i\n",speed_p);
++    }
++    */
++     CelFrontPlaneDepthv = ( (stereo->uiVals[Stereo::depth] / 2 - \
++                            stereo->uiVals[Stereo::backplaneRelief] * \
++                            stereo->allinverted) ) * \
++                            stereo->DepthFactor;
++}
++void CelestiaCore::celStereoChanged()
++{
++    if (stereo->mode != Stereo::sidebyside_c)
++        if (views.size() > 1)
++            singleView();
++    ( stereo->mode >= Stereo::OFF ) && ( stereo->mode = 0 );
++    glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
++    ///convert bool to factor (non zero) by conditionally negate a value bitwise without branching (0|1 -> 1|-1)
++    stereo->allinverted = (stereo->uiFlags[Stereo::inverted] ^ \
++                    (stereo->uiFlags[Stereo::inverted] - 1)) * -1;
++
++    stereo->changed=false;
++}
+ 
+ void CelestiaCore::draw()
+ {
+@@ -2456,6 +2702,12 @@
+         return;
+     viewChanged = false;
+ 
++    if (stereo->mode)
++        celDynamicStereoValues();
++ 
++    if (stereo->changed)
++        celStereoChanged();
++
+     if (views.size() == 1)
+     {
+         // I'm not certain that a special case for one view is required; but,
+@@ -2465,11 +2717,80 @@
+         // reasonable in the typical single view case, we'll use this
+         // scissorless special case.  I'm only paranoid because I've been
+         // burned by crap hardware so many times. cjl
++        ///At least we'd need a single view for some stereoscopics modes.
++        ///Having stereoscopics within (normal) multiviews would be possible by anaglpyhics only,
++        ///which is deprecated (but still a nice to have).
+         glViewport(0, 0, width, height);
+         renderer->resize(width, height);
+-        sim->render(*renderer);
++        ///here we go
++        if ( stereo->mode )
++        {
++            Observer& observer = sim->getObserver();
++            
++            Vector3d hv(0.0, CelFrontPlaneDepthv, 0.0);
++            Quaterniond CelCullingVPos = observer.getOrientation();
++            Quaterniond hp = Quaterniond(0.0, hv.x(), CelFrontPlaneDepthv, hv.z()) * CelCullingVPos;
++            switch ( stereo->mode )
++            {
++                case 1: //anaglyph red/cyan
++
++                case 2: // shutter glasses + shutter glasses inverted
++                case 3: //TODO shutter glasses sync inverted (shift + F7 should do for now)
++                        //From what I can see without my shutterglasses - synced by vblank may/should work on machines which
++                        //are strong enough to ensure 60fps (or more), without flickering by "out of sync"...
++                        //30fps for each eye would be enough for a beginning, nothing for hours. Some people get headache, some not ;)
++                        //Due to lack of nvidia IR-Modul LKM I cannot test it, But if your machines produces 60fps with
++                        //vsync on, and your glasses are synced by vsync, it just should work.
++                        //This code implements in abstract the same what nv 3dvision hooks on dx3d on consumer cards, and probably
++                        //the thing on quadbuffer-cards.
++                        //Before implementing this for any other stereo-'tool' ... we need to fix the thing with -z
++                        //The method below will be right the same for any represantation display
++                        //(eventually with different given default stereo parameters)
++
++                    //glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
++                    if ( ! stereo->rightEye )
++                    {
++                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() + (hp.coeffs() * stereo->allinverted)) );
++                        sim->orbit(Quaternionf(YRotation( -stereo->fdepth * stereo->allinverted )));
++                        ///(Quaternionf(YRotation( CelFrontPlaneDepthv ))); maybe useful on HMDs
++                        if (stereo->mode == 1 )
++                            glColorMask(GL_FALSE,GL_TRUE,GL_TRUE,GL_TRUE);
++                        sim->render(*renderer);
++                        observer.setOrientation (Quaterniond( CelCullingVPos.coeffs() - (hp.coeffs() * stereo->allinverted )) );
++                        sim->orbit(Quaternionf(YRotation( stereo->fdepth * stereo->allinverted )));
++                        ///(Quaternionf(YRotation( -CelFrontPlaneDepthv )));
++                        stereo->rightEye=true;
++                    }
++                    else
++                    {
++                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() - (hp.coeffs() * stereo->allinverted )) );
++                        sim->orbit(Quaternionf(YRotation( stereo->fdepth * stereo->allinverted )));
++                        ///(Quaternionf(YRotation( -CelFrontPlaneDepthv )));
++                        if (stereo->mode == 1 )
++                            glColorMask(GL_TRUE,GL_FALSE,GL_FALSE,GL_TRUE);
++                        sim->render(*renderer);
++                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() + (hp.coeffs() * stereo->allinverted )) );
++                        sim->orbit(Quaternionf(YRotation( -stereo->fdepth * stereo->allinverted )));
++                        ///(Quaternionf(YRotation( CelFrontPlaneDepthv )));
++                        stereo->rightEye=false;
++                    }
++                    break;
++                case 4: // side by side (crosseyed view)
++                    stereo->rightEye=false;
++                    splitView(View::VerticalSplit);//TODO, should be a sspecial "splitView" with verbosity off and Splitview-Menu disabled
++                    break;
++                case 5: // diffenrent shutter glasses hmd above under etc. <-TODO
++
++                    break;
++            }
++        }
++        else
++        {
++            sim->render(*renderer);
++        }
+     }
+-    else
++
++    else ///splitted views | sidebyside/aboveunder stereo
+     {
+         glEnable(GL_SCISSOR_TEST);
+         for (list<View*>::iterator iter = views.begin();
+@@ -2488,7 +2809,42 @@
+                            (GLsizei) (view->height * height));
+                 renderer->resize((int) (view->width * width),
+                                  (int) (view->height * height));
+-                sim->render(*renderer, *view->observer);
++                /// stereo crossed-eyed interlaced
++                if ( ( stereo->mode == Stereo::sidebyside_c ) && (views.size()==3) )
++                {
++                    Observer& observer = sim->getObserver();
++                    Vector3d hv(0.0, CelFrontPlaneDepthv, 0.0);
++                    Quaterniond CelCullingVPos = observer.getOrientation();
++                    Quaterniond hp = Quaterniond(0.0, hv.x(), CelFrontPlaneDepthv, hv.z()) * CelCullingVPos;
++                    //view->observer=&observer;
++                    if ( ! stereo->rightEye)
++                    {
++                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() + (hp.coeffs() * stereo->allinverted)) );
++                        sim->orbit(Quaternionf(YRotation( -stereo->fdepth * stereo->allinverted)));
++                        sim->render(*renderer);
++                        
++                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() - (hp.coeffs() * stereo->allinverted)) );
++                        sim->orbit(Quaternionf(YRotation( stereo->fdepth * stereo->allinverted )));
++
++                        stereo->rightEye=true;
++                    }
++                    else
++                    {
++                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() - (hp.coeffs() * stereo->allinverted)) );
++                        sim->orbit(Quaternionf(YRotation( stereo->fdepth * stereo->allinverted )));
++                        sim->render(*renderer);
++
++                        observer.setOrientation( Quaterniond( CelCullingVPos.coeffs() + (hp.coeffs() * stereo->allinverted)) );
++                        sim->orbit(Quaternionf(YRotation( -stereo->fdepth * stereo->allinverted)));
++                        
++                        stereo->rightEye=false;
++                    }
++
++                }
++                else
++                {
++                    sim->render(*renderer, *view->observer);
++                }
+             }
+         }
+         glDisable(GL_SCISSOR_TEST);
+@@ -2500,7 +2856,7 @@
+         glDisable(GL_MULTISAMPLE_ARB);
+ 
+     renderOverlay();
+-	if (showConsole)
++    if (showConsole)
+     {
+         console.setFont(font);
+         glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+@@ -2525,7 +2881,7 @@
+         fpsCounterStartTime = sysTime;
+     }
+ 
+-#if 0
++#if  0
+     GLenum err = glGetError();
+     if (err != GL_NO_ERROR)
+     {
+@@ -2538,7 +2894,7 @@
+ void CelestiaCore::resize(GLsizei w, GLsizei h)
+ {
+     if (h == 0)
+-	h = 1;
++        h = 1;
+ 
+     glViewport(0, 0, w, h);
+     if (renderer != NULL)
+@@ -3200,8 +3556,8 @@
+     overlay << descBuf << '\n';
+     if (distance >= 0)
+     {
+-    	overlay << _("Distance: ");
+-    	displayDistanceLy(overlay, distance);
++        overlay << _("Distance: ");
++        displayDistanceLy(overlay, distance);
+     }
+     else
+     {
+@@ -3246,46 +3602,46 @@
+ 
+     displayApparentDiameter(overlay, body.getRadius(), distanceKm);
+ 
+-	// Display the phase angle
++    // Display the phase angle
+ 
+-	// Find the parent star of the body. This can be slightly complicated if
+-	// the body orbits a barycenter instead of a star.
+-	Selection parent = Selection(&body).parent();
+-	while (parent.body() != NULL)
+-		parent = parent.parent();
+-
+-	if (parent.star() != NULL)
+-	{
+-		bool showPhaseAngle = false;
+-
+-		Star* sun = parent.star();
+-		if (sun->getVisibility())
+-		{
+-			showPhaseAngle = true;
+-		}
+-		else if (sun->getOrbitingStars())
+-		{
+-			// The planet's orbit is defined with respect to a barycenter. If there's
+-			// a single star orbiting the barycenter, we'll compute the phase angle
+-			// for the planet with respect to that star. If there are no stars, the
+-			// planet is an orphan, drifting through space with no star. We also skip
+-			// displaying the phase angle when there are multiple stars (for now.)
+-			if (sun->getOrbitingStars()->size() == 1)
+-			{
+-				sun = sun->getOrbitingStars()->at(0);
+-				showPhaseAngle = sun->getVisibility();
+-			}
+-		}
+-
+-		if (showPhaseAngle)
+-		{
+-			Vector3d sunVec = Selection(&body).getPosition(t).offsetFromKm(Selection(sun).getPosition(t));
+-			sunVec.normalize();
+-			double cosPhaseAngle = sunVec.dot(viewVec.normalized());
+-			double phaseAngle = acos(cosPhaseAngle);
+-			overlay.oprintf(_("Phase angle: %.1f%s\n"), radToDeg(phaseAngle), UTF8_DEGREE_SIGN);
+-		}
+-	}
++    // Find the parent star of the body. This can be slightly complicated if
++    // the body orbits a barycenter instead of a star.
++    Selection parent = Selection(&body).parent();
++    while (parent.body() != NULL)
++        parent = parent.parent();
++
++    if (parent.star() != NULL)
++    {
++        bool showPhaseAngle = false;
++
++        Star* sun = parent.star();
++        if (sun->getVisibility())
++        {
++            showPhaseAngle = true;
++        }
++        else if (sun->getOrbitingStars())
++        {
++            // The planet's orbit is defined with respect to a barycenter. If there's
++            // a single star orbiting the barycenter, we'll compute the phase angle
++            // for the planet with respect to that star. If there are no stars, the
++            // planet is an orphan, drifting through space with no star. We also skip
++            // displaying the phase angle when there are multiple stars (for now.)
++            if (sun->getOrbitingStars()->size() == 1)
++            {
++                sun = sun->getOrbitingStars()->at(0);
++                showPhaseAngle = sun->getVisibility();
++            }
++        }
++
++        if (showPhaseAngle)
++        {
++            Vector3d sunVec = Selection(&body).getPosition(t).offsetFromKm(Selection(sun).getPosition(t));
++            sunVec.normalize();
++            double cosPhaseAngle = sunVec.dot(viewVec.normalized());
++            double phaseAngle = acos(cosPhaseAngle);
++            overlay.oprintf(_("Phase angle: %.1f%s\n"), radToDeg(phaseAngle), UTF8_DEGREE_SIGN);
++        }
++    }
+ 
+     if (detail > 1)
+     {
+@@ -3438,17 +3794,17 @@
+         if (sim->getSelection().getType() == Selection::Type_Body &&
+             (sim->getTargetSpeed() < 0.99 * astro::speedOfLight))
+         {
+-    	    if (lightTravelFlag)
+-    	    {
+-    	        Vector3d v = sim->getSelection().getPosition(sim->getTime()).offsetFromKm(sim->getObserver().getPosition());
+-    	        // light travel time in days
++            if (lightTravelFlag)
++            {
++                Vector3d v = sim->getSelection().getPosition(sim->getTime()).offsetFromKm(sim->getObserver().getPosition());
++                // light travel time in days
+                 lt = v.norm() / (86400.0 * astro::speedOfLight);
+-    	    }
+-    	}
++            }
++        }
+         else
+-    	{
+-    	    lt = 0.0;
+-    	}
++        {
++            lt = 0.0;
++        }
+ 
+         double tdb = sim->getTime() + lt;
+         astro::Date d = timeZoneBias != 0?astro::TDBtoLocal(tdb):astro::TDBtoUTC(tdb);
+@@ -3522,7 +3878,7 @@
+         overlay->setf(ios::fixed);
+         *overlay << _("\nSpeed: ");
+ 
+-        double speed = sim->getObserver().getVelocity().norm();
++        speed = sim->getObserver().getVelocity().norm();
+         if (speed < 1.0f)
+             *overlay << SigDigitNum(speed * 1000.0f, 3) << _(" m/s");
+         else if (speed < 10000.0f)
+@@ -3545,18 +3901,23 @@
+         glTranslatef((float) (width - emWidth * 15),
+                      (float) (fontHeight * 3 + 5), 0.0f);
+         overlay->beginText();
+-        glColor4f(0.6f, 0.6f, 1.0f, 1);
++        glColor4f(0.5f, 0.5f, 0.9f, 1);
+ 
+         if (sim->getObserverMode() == Observer::Travelling)
+         {
+-            *overlay << _("Travelling ");
+-            double timeLeft = sim->getArrivalTime() - sim->getRealTime();
+-            if (timeLeft >= 1)
+-                *overlay << '(' << FormattedNumber(timeLeft, 0, FormattedNumber::GroupThousands) << ')';
++            *overlay << _("Travel  ");
++            double RemainTravelledTime = (  sim->getArrivalTime() - sim->getRealTime() );
++            if ( ! isTravelTime )
++                isTravelTime = RemainTravelledTime;
++            TravelledTime= abs(100-( (RemainTravelledTime*100)/isTravelTime));
++            if ( RemainTravelledTime <= 99 )
++                *overlay << '(' << FormattedNumber(TravelledTime, 0, FormattedNumber::GroupThousands) <<'%' << ')';
+             *overlay << '\n';
+         }
+         else
+         {
++            TravelledTime = 0;
++            isTravelTime = false;
+             *overlay << '\n';
+         }
+ 
+@@ -3575,35 +3936,34 @@
+ 
+             switch (coordSys)
+             {
+-            case ObserverFrame::Ecliptical:
+-                *overlay << _("Follow ");
+-                displaySelectionName(*overlay, refObject,
++                case ObserverFrame::Ecliptical:
++                    *overlay << _("Follow ");
++                    displaySelectionName(*overlay, refObject,
+                                      *sim->getUniverse());
+-                break;
+-            case ObserverFrame::BodyFixed:
+-                *overlay << _("Sync Orbit ");
+-                displaySelectionName(*overlay, refObject,
++                    break;
++                case ObserverFrame::BodyFixed:
++                    *overlay << _("Sync Orbit ");
++                    displaySelectionName(*overlay, refObject,
+                                      *sim->getUniverse());
+-                break;
+-            case ObserverFrame::PhaseLock:
+-                *overlay << _("Lock ");
+-                displaySelectionName(*overlay, refObject,
++                    break;
++                case ObserverFrame::PhaseLock:
++                    *overlay << _("Lock ");
++                    displaySelectionName(*overlay, refObject,
+                                      *sim->getUniverse());
+-                *overlay << " -> ";
+-                displaySelectionName(*overlay, sim->getFrame()->getTargetObject(),
++                    *overlay << " -> ";
++                    displaySelectionName(*overlay, sim->getFrame()->getTargetObject(),
+                                      *sim->getUniverse());
+-                break;
++                    break;
+ 
+-            case ObserverFrame::Chase:
+-                *overlay << _("Chase ");
+-                displaySelectionName(*overlay, refObject,
++                case ObserverFrame::Chase:
++                    *overlay << _("Chase ");
++                    displaySelectionName(*overlay, refObject,
+                                      *sim->getUniverse());
+-                break;
++                    break;
+ 
+-	    default:
+-		break;
++                default:
++                break;
+             }
+-
+             *overlay << '\n';
+         }
+ 
+@@ -3751,8 +4111,8 @@
+                                 v.norm());
+             break;
+ 
+-	      default:
+-	          break;
++        default:
++            break;
+         }
+ 
+         
+@@ -4174,27 +4534,27 @@
+     DSONameDatabase* dsoNameDB  = new DSONameDatabase;
+     DSODatabase*     dsoDB      = new DSODatabase;
+     dsoDB->setNameDatabase(dsoNameDB);
+-	    
+-	// Load first the vector of dsoCatalogFiles in the data directory (deepsky.dsc, globulars.dsc,...):
+-	 
+-	for (vector<string>::const_iterator iter = config->dsoCatalogFiles.begin();
++    
++    // Load first the vector of dsoCatalogFiles in the data directory (deepsky.dsc, globulars.dsc,...):
++ 
++    for (vector<string>::const_iterator iter = config->dsoCatalogFiles.begin();
+     iter != config->dsoCatalogFiles.end(); iter++)
+     {
+-    	if (progressNotifier)
+-        	progressNotifier->update(*iter);
+-	
+-		ifstream dsoFile(iter->c_str(), ios::in);
++        if (progressNotifier)
++            progressNotifier->update(*iter);
++
++        ifstream dsoFile(iter->c_str(), ios::in);
+         if (!dsoFile.good())
+         {
+-        	cerr<< _("Error opening deepsky catalog file.") << '\n';
++            cerr<< _("Error opening deepsky catalog file.") << '\n';
++            delete dsoDB;
++            return false;
++        }
++        else if (!dsoDB->load(dsoFile, ""))
++        {
++            cerr << "Cannot read Deep Sky Objects database." << '\n';
+             delete dsoDB;
+             return false;
+-		}
+-        else if (!dsoDB->load(dsoFile, ""))		
+-	    {
+-    		cerr << "Cannot read Deep Sky Objects database." << '\n';
+-        	delete dsoDB;
+-           	return false;
+         }
+     }
+ 
+@@ -4453,7 +4813,7 @@
+     ifstream starNamesFile(cfg.starNamesFile.c_str(), ios::in);
+     if (!starNamesFile.good())
+     {
+-	cerr << _("Error opening ") << cfg.starNamesFile << '\n';
++    cerr << _("Error opening ") << cfg.starNamesFile << '\n';
+         return false;
+     }
+ 
+@@ -4991,7 +5351,7 @@
+                     }
+                 }
+             }
+-	    }
++        }
+         return true;
+     };
+ };
